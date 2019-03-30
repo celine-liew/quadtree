@@ -170,7 +170,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			}
 		}
 
-		// BOTTOMRIGHTQ()
+		// BOTTOMRIGHTQ() - TBC
 		for (unsigned int x = (width/2); x < ctrLr_x; x++){
 			for (unsigned int y = (height/2); y < ctrLr_y; y ++){
 				pair<int, int> curSplitPos;
