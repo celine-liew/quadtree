@@ -232,7 +232,7 @@ private:
    double getEntropyBottomRighOnlyNWnoSplit(pair<int, int> curSplitPos, long rectArea, 
    int twokWidth, int twokheight, stats s);
    
-   // PNG renderPixels(PNG & toRender, Node * node)
+   PNG renderHelper(PNG & toRender, Node * root);
 
 };
 

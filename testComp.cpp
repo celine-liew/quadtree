@@ -62,7 +62,7 @@ TEST_CASE("stats::basic getAvg 2","[weight=1][part=stats]"){
     pair<int,int> lr(2,2);
     HSLAPixel result = s.getAvg(ul,lr);
     std::cout << "size 3,3: " << result << endl;
-    HSLAPixel expected(112.5,1.0, 0.5);
+    HSLAPixel expected(157.5,1.0, 0.5);
 
     REQUIRE(result == expected);
 }

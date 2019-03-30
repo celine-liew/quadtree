@@ -66,7 +66,7 @@ int toqutree::size() {
 
 toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 
-	stats s = stats(im);
+	stats s(im);
 	int width = im.width();
 	int height = im.height();
 	pair<int,int> ul(0,0);
@@ -170,7 +170,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			}
 		}
 
-		// BOTTOMRIGHTQ() - WIP
+		// BOTTOMRIGHTQ() 
 		for (unsigned int x = (width/2); x < ctrLr_x; x++){
 			for (unsigned int y = (height/2); y < ctrLr_y; y ++){
 				pair<int, int> curSplitPos;
@@ -240,9 +240,10 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 PNG toqutree::render(){
 	unsigned int width = pow(2, root->dimension);
 	unsigned int height =  width;
-	PNG toRender = PNG(width, height);
+	PNG toRender(width, height);
 
-	//TODO: to add helper here
+	toRender = renderHelper(toRender, root);
+	//TODO: to add helper here.. Question: how to connnect RenderHelper with our previous stitchImages????
 
 // My algorithm for this problem included a helper function
 // that was analogous to Find in a BST, but it navigated the 
@@ -429,20 +430,14 @@ double toqutree::getEntropyTopLeftQ(pair<int, int> curSplitPos, long rectArea, i
 	pair<int,int> lrNwBottomLeft((x-1) , (height -1));
 	pair<int,int> ulNwBottomRight((width/2)+x, y+(height/2));
 	pair<int,int> lrNwBottomRight( (width -1), (height -1));
+	double entropyNW = getEntropyFromFour(ulNwTopLeft, lrNwTopLeft, ulNwTopright, lrNwTopright, ulNwBottomLeft, lrNwBottomLeft, ulNwBottomRight, lrNwBottomRight, s, rectArea);
 
-	double entropyNW = ((s.entropy(ulNwTopLeft, lrNwTopLeft) * s.rectArea(ulNwTopLeft, lrNwTopLeft))
-						+ (s.entropy(ulNwTopright, lrNwTopright) * s.rectArea(ulNwTopright, lrNwTopright))
-						+ (s.entropy(ulNwBottomLeft, lrNwBottomLeft) * s.rectArea(ulNwBottomLeft, lrNwBottomLeft))
-						+ (s.entropy(ulNwBottomRight, lrNwBottomRight) * s.rectArea(ulNwBottomRight, lrNwBottomRight)))
-						/rectArea;
 
 	pair<int,int> ulSeRight((width/2) + x,y);
 	pair<int,int> lrSeRight(width -1,(height/2) + y - 1);
 	pair<int,int> ulSeLeft(0,y);
 	pair<int,int> lrSeLeft(x-1,(height/2) + y - 1);
-	double entropySW = ((s.entropy(ulSeRight,lrSeRight) * s.rectArea(ulSeRight,lrSeRight))
-						+ (s.entropy(ulSeLeft, lrSeLeft) * s.rectArea(ulSeLeft, lrSeLeft)))
-						/rectArea ;
+	double entropySW = getEntropyFromTwo(ulSeRight,lrSeRight,ulSeLeft,lrSeLeft, s, rectArea);
 
 
 	pair<int,int> ulNeTop(x,0);
@@ -639,12 +634,14 @@ double toqutree::getEntropyBottomRighOnlyNWnoSplit(pair<int, int> curSplitPos, l
 	pair<int,int> lrSEBottomLeft(x-(twokWidth/2)-1, twokheight-1);
 	pair<int,int> ulSEBottomRight(x, y);
 	pair<int,int> lrSEBottomRight(twokWidth-1, twokheight- 1);
-	
-	
 	double entropySE = getEntropyFromFour(ulSETopLeft, lrSETopLeft, ulSETopRight, lrSETopRight, ulSEBottomLeft, lrSEBottomLeft, 
 	ulSEBottomRight, lrSEBottomRight, s, rectArea);
 	
 	return (entropySE + entropyNW + entropySW + entropyNE) / 4;
 }
 
+PNG toqutree::renderHelper(PNG & toRender, Node * root){
+	
+	return toRender;
+}
 
