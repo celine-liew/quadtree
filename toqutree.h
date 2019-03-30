@@ -226,6 +226,13 @@ private:
    double getEntropyBottomRighNENWNoSplits(pair<int, int> curSplitPos, long rectArea, 
    int twokWidth, int twokheight, stats s);
 
+   double getEntropyBottomRighNWSWNoSplits(pair<int, int> curSplitPos, long rectArea, 
+   int twokWidth, int twokheight, stats s);
+
+   double getEntropyBottomRighOnlyNWnoSplit(pair<int, int> curSplitPos, long rectArea, 
+   int twokWidth, int twokheight, stats s);
+   
+
 };
 
 #endif

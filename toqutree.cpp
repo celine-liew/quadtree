@@ -170,7 +170,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			}
 		}
 
-		// BOTTOMRIGHTQ() - TBC
+		// BOTTOMRIGHTQ() - WIP
 		for (unsigned int x = (width/2); x < ctrLr_x; x++){
 			for (unsigned int y = (height/2); y < ctrLr_y; y ++){
 				pair<int, int> curSplitPos;
@@ -183,11 +183,21 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 					if (y == (height/2)){
 						avgEntropy = getEntropyBottomRightQfourPerfectSquares(curSplitPos, rectArea, width, height, s);
 					} else {
-					// seee 4. bottomRightQ_x==width/2 else case
+					// see 4. bottomRightQ_x==width/2 else case. SE SW horizonal Split
 						avgEntropy = getEntropyBottomRighNENWNoSplits(curSplitPos, rectArea, width, height, s);
 					}
+				} else if (x > (width/2)) {
+					// see 4. bottomRightQ_ y = height/2. NW & SW perf squares, SE NE vertical split
+					if (y == (height/2)){
+						avgEntropy = getEntropyBottomRighNWSWNoSplits(curSplitPos, rectArea, width, height, s);
+					}
+					else {
+						// see 4. bottomRight_x > width/2 and y > height/2. only NW no split. SE split in 4, rest in 2.
+						avgEntropy = getEntropyBottomRighOnlyNWnoSplit(curSplitPos, rectArea, width, height, s);
+					}
+				}
 					
-				} else {
+				 else {
 
 					// TODO TODO,,,,,,
 					avgEntropy = getEntropyTopRightQ(curSplitPos,rectArea, width, height, s);
@@ -558,3 +568,72 @@ double toqutree::getEntropyBottomRighNENWNoSplits(pair<int, int> curSplitPos, lo
 	
 	return (entropySE + entropyNW + entropySW + entropyNE) / 4;
 }
+
+double toqutree::getEntropyBottomRighNWSWNoSplits(pair<int, int> curSplitPos, long rectArea, int twokWidth, int twokheight, stats s) {
+	int x = curSplitPos.first;
+	int y = curSplitPos.second;
+
+
+	pair<int,int> ulNW(x - (twokWidth/2), y - (twokWidth/2)); // y will be 0
+	pair<int,int> lrNW(x-1, y - 1);
+	double entropyNW = s.entropy(ulNW, lrNW);
+
+	pair<int,int> ulSW(x - (twokWidth/2), y);
+	pair<int,int> lrSW(x-1, twokheight - 1);
+	double entropySW = s.entropy(ulSW, lrSW);
+
+	pair<int,int> ulNELeft(0, 0);
+	pair<int,int> lrNELeft(x - (twokWidth/2) - 1 , y -1);
+	pair<int,int> ulNERight(x, 0);
+	pair<int,int> lrNERight(twokWidth-1, y -1);
+	double entropyNE = getEntropyFromTwo(ulNELeft,lrNELeft,ulNERight,lrNERight, s, rectArea);
+
+	
+	pair<int,int> ulSELeft(0, y);
+	pair<int,int> lrSELeft(x - (twokWidth/2) - 1, twokheight - 1);
+	pair<int,int> ulSERight(x, y);
+	pair<int,int> lrSERight(twokWidth-1, twokheight -1);
+	double entropySE = getEntropyFromTwo(ulSELeft,lrSELeft,ulSERight,lrSERight, s, rectArea);
+	
+	return (entropySE + entropyNW + entropySW + entropyNE) / 4;
+}
+
+double toqutree::getEntropyBottomRighOnlyNWnoSplit(pair<int, int> curSplitPos, long rectArea, int twokWidth, int twokheight, stats s) {
+	int x = curSplitPos.first;
+	int y = curSplitPos.second;
+
+
+	pair<int,int> ulNW(x - (twokWidth/2), y - (twokheight/2));
+	pair<int,int> lrNW(x-1, y - 1);
+	double entropyNW = s.entropy(ulNW, lrNW);
+
+	pair<int,int> ulSWTop(x - (twokWidth/2), 0);
+	pair<int,int> lrSWTop(x-1, y - (twokheight/2) - 1);
+	pair<int,int> ulSWBottom(x - (twokWidth/2), y);
+	pair<int,int> lrSWBottom(x - 1, twokheight - 1);
+	double entropySW = getEntropyFromTwo(ulSWTop,lrSWTop,ulSWBottom,lrSWBottom, s, rectArea);
+
+	pair<int,int> ulNELeft(0, y - (twokheight/2));
+	pair<int,int> lrNELeft(x - (twokWidth/2) - 1 , y -1);
+	pair<int,int> ulNERight(x, y - (twokheight/2));
+	pair<int,int> lrNERight(twokWidth-1, y -1);
+	double entropyNE = getEntropyFromTwo(ulNELeft,lrNELeft,ulNERight,lrNERight, s, rectArea);
+
+	
+	pair<int,int> ulSETopLeft(0, 0);   
+	pair<int,int> lrSETopLeft(x-(twokWidth/2)-1, y - (twokheight/2)-1);
+	pair<int,int> ulSETopRight(x, 0);   
+	pair<int,int> lrSETopRight(twokWidth-1,  y - (twokheight/2)-1);
+	pair<int,int> ulSEBottomLeft(0, y);
+	pair<int,int> lrSEBottomLeft(x-(twokWidth/2)-1, twokheight-1);
+	pair<int,int> ulSEBottomRight(x, y);
+	pair<int,int> lrSEBottomRight(twokWidth-1, twokheight- 1);
+	
+	
+	double entropySE = getEntropyFromFour(ulSETopLeft, lrSETopLeft, ulSETopRight, lrSETopRight, ulSEBottomLeft, lrSEBottomLeft, 
+	ulSEBottomRight, lrSEBottomRight, s, rectArea);
+	
+	return (entropySE + entropyNW + entropySW + entropyNE) / 4;
+}
+
+
