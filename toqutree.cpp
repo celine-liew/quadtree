@@ -196,12 +196,6 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 						avgEntropy = getEntropyBottomRighOnlyNWnoSplit(curSplitPos, rectArea, width, height, s);
 					}
 				}
-					
-				 else {
-
-					// TODO TODO,,,,,,
-					avgEntropy = getEntropyTopRightQ(curSplitPos,rectArea, width, height, s);
-				}
 
 				// check if avgEntropy < minEntropy
 				if (isMinEntropy(minEnt, avgEntropy)){
@@ -244,6 +238,11 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 // an average.
 
 PNG toqutree::render(){
+	unsigned int width = pow(2, root->dimension);
+	unsigned int height =  width;
+	PNG toRender = PNG(width, height);
+
+	//TODO: to add helper here
 
 // My algorithm for this problem included a helper function
 // that was analogous to Find in a BST, but it navigated the 
@@ -251,12 +250,13 @@ PNG toqutree::render(){
 
 /* your code here */
 
+	return toRender;
 }
 
 /* oops, i left the implementation of this one in the file! */
 void toqutree::prune(double tol){
 	//TODO NOTE: we need to pass in avgColor of ROOT because prune will be recursively called and we
-	// will need to remember the avgColour of the root!!!!!!s
+	// will need to remember the avgColour of the root!!!!!!
 	// prune(avgColor, root, tol); 
 
 }
@@ -264,6 +264,17 @@ void toqutree::prune(double tol){
 /* called by destructor and assignment operator*/
 void toqutree::clear(Node * & curr){
 /* your code here */
+	if (curr == NULL){
+		return;
+	}
+	if (curr->NE != NULL){
+		clear(curr->NE);
+		clear(curr->NW);
+		clear(curr->SE);
+		clear(curr->SW);
+	}
+	delete curr;
+	curr = NULL;
 }
 
 /* done */
