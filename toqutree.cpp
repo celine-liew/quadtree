@@ -194,8 +194,6 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			}
 		}
 
-
-
 		// BOTTOMRIGHTQ() 
 		for (unsigned int x = (width/2); x < ctrLr_x; x++){
 			for (unsigned int y = (height/2); y < ctrLr_y; y ++){
@@ -233,10 +231,27 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			}
 		}
 
+		// after 4 for loops - make child image (5 cases based on the splitPoint)
+		unsigned int optX = optSplitPos.first;
+		unsigned int optY = optSplitPos.second;
 
+		if(optX == width/2 && optY == height/2) {
+			// perfect four squares 
+		} else if ((ctrUl_x <= optX) && (optX <= width/2) && (ctrUl_y <= optY) && (optY <= height/2)) {
+			// SE is square
 
+		} else if ((width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= height/2)) {
+			// SE stitch vertically
 
-		// after 4 for loops - make child image, check whichQ to decide how we split it
+		} else if ((ctrUl_x <= optX) && (optX <= width/2) && (height/2 < optY) && (optY <= ctrLr_y)) {
+			// SE stitch horizontally 
+
+		} else if ((width/2 < optX) && (optX <= ctrLr_x) && (height/2 < optY) && (optY <= ctrLr_y)) {
+			// SE stitch vertically + horizontally 
+
+		} else {
+			std::cout << "Something is wrong!(buildTree)" << endl;
+		}
 	}
 
 	// for splitting
