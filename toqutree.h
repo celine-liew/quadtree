@@ -45,9 +45,9 @@ private:
 
       Node(pair<int,int> ctr, int dim, HSLAPixel a);
 
-        pair<int,int> center; // optimal splitting position 
-        int dimension; // node represents a square, 2^dim x 2^dim in size
-        HSLAPixel avg; // average color over square
+      pair<int,int> center; // optimal splitting position 
+      int dimension; // node represents a square, 2^dim x 2^dim in size
+      HSLAPixel avg; // average color over square
 
       Node * NW; // left top child 
       Node * NE; // right top child 
@@ -237,6 +237,10 @@ private:
    int twokWidth, int twokheight, stats s);
    
    PNG renderHelper(PNG & toRender, Node * root);
+
+   void pruneHelper(Node * & aNode, double tol);
+
+   bool withinTolerance(Node * node, double tol, HSLAPixel rootPixel);
 
 };
 
