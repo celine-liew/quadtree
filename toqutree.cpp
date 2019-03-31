@@ -237,6 +237,9 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 
 		if(optX == width/2 && optY == height/2) {
 			// perfect four squares 
+			seChild = makeImageNoStitch(k, im, optSplitPos);
+			// TODO!! Starts from here!
+
 		} else if ((ctrUl_x <= optX) && (optX <= width/2) && (ctrUl_y <= optY) && (optY <= height/2)) {
 			// SE is square
 
@@ -339,7 +342,7 @@ int toqutree::countSize(Node * root){
 	}
 }
 
-PNG toqutree::makeImage(int dim, PNG & im, pair<int,int> splitPoint){
+PNG toqutree::makeImageNoStitch(int dim, PNG & im, pair<int,int> splitPoint){
 	unsigned int width = pow(2,dim);
 	unsigned int height = width;
 	PNG newIm(width, height);
