@@ -235,22 +235,51 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		unsigned int optX = optSplitPos.first;
 		unsigned int optY = optSplitPos.second;
 
-		if(optX == width/2 && optY == height/2) {
+		if(optX == (unsigned int) width/2 && optY == (unsigned int) height/2) {
 			// perfect four squares 
-			seChild = makeImageNoStitch(k, im, optSplitPos);
-			// TODO!! Starts from here!
+			// Q : k-- is correct?
+			pair<int,int> nwUl(0,0);
+			pair<int,int> swUl(0,optY);
+			pair<int,int> neUl(optX,0);
 
-		} else if ((ctrUl_x <= optX) && (optX <= width/2) && (ctrUl_y <= optY) && (optY <= height/2)) {
+			seChild = makeImageNoStitch(k--, im, optSplitPos);
+			swChild = makeImageNoStitch(k--, im, swUl);
+			nwChild = makeImageNoStitch(k--, im, nwUl);
+			neChild = makeImageNoStitch(k--, im, neUl);
+
+		} else if ((ctrUl_x <= optX) && (optX <= (unsigned int) width/2) && (ctrUl_y <= optY) && (optY <= (unsigned int) height/2)) {
 			// SE is square
+			seChild = makeImageNoStitch(k--, im, optSplitPos);
+			swChild = stitchImgVertical(k--, im, optSplitPos);
+			neChild = stitchImgHor(k--, im, optSplitPos);
+			nwChild = stitchImgVandH(k--, im, optSplitPos);
 
-		} else if ((width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= height/2)) {
+		} else if (((unsigned int) width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= (unsigned int) height/2)) {
 			// SE stitch vertically
+			// sw has full image
+			pair<int,int> indexPos(optX - (width/2) , optY);
+			seChild = stitchImgVertical(k--, im, indexPos);
+			swChild = makeImageNoStitch(k--, im, indexPos);
+			nwChild = stitchImgHor(k--, im, indexPos);
+			neChild = stitchImgVandH(k--, im, indexPos);
 
-		} else if ((ctrUl_x <= optX) && (optX <= width/2) && (height/2 < optY) && (optY <= ctrLr_y)) {
+		} else if ((ctrUl_x <= optX) && (optX <= (unsigned int) width/2) && ((unsigned int) height/2 < optY) && (optY <= ctrLr_y)) {
 			// SE stitch horizontally 
+			// ne has full image
+			pair<int,int> indexPos(optX, optY - (height/2));
+			seChild = stitchImgHor(k--, im, indexPos);
+			swChild = stitchImgVandH(k--, im, indexPos);
+			nwChild = stitchImgVertical(k--, im, indexPos);
+			neChild = makeImageNoStitch(k--, im, indexPos);
 
-		} else if ((width/2 < optX) && (optX <= ctrLr_x) && (height/2 < optY) && (optY <= ctrLr_y)) {
+		} else if (((unsigned int) width/2 < optX) && (optX <= ctrLr_x) && ((unsigned int) height/2 < optY) && (optY <= ctrLr_y)) {
 			// SE stitch vertically + horizontally 
+			// nw has full image
+			pair<int,int> indexPos(optX - (width/2), optY - (height/2));
+			seChild = stitchImgVandH(k--, im, indexPos);
+			swChild = stitchImgHor(k--, im, indexPos);
+			nwChild = makeImageNoStitch(k--, im, indexPos);
+			neChild = stitchImgVertical(k--, im, indexPos);
 
 		} else {
 			std::cout << "Something is wrong!(buildTree)" << endl;
@@ -379,7 +408,6 @@ PNG toqutree::stitchImgVertical(int dim, PNG & im, pair<int,int> splitPoint){
 			* pixelNew = *im.getPixel(i, y + j);
 		}
 	}
-
 	return newIm;
 
 }
