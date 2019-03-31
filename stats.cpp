@@ -129,6 +129,7 @@ HSLAPixel stats::getAvg(pair<int, int> ul, pair<int, int> lr)
 
 vector<int> stats::buildHist(pair<int, int> ul, pair<int, int> lr)
 {
+    // std::cout << "start BUILD HIST~ " << endl;
     int ul_x = ul.first;
     int lr_x = lr.first;
     int ul_y = ul.second;
@@ -143,7 +144,7 @@ vector<int> stats::buildHist(pair<int, int> ul, pair<int, int> lr)
         {
             bin = hist[lr_x][lr_y][i];
         }
-        if (ul_x != 0 && ul_y == 0)
+        else if (ul_x != 0 && ul_y == 0)
         {
             bin = hist[lr_x][lr_y][i] - hist[ul_x - 1][lr_y][i];
         }
@@ -157,6 +158,7 @@ vector<int> stats::buildHist(pair<int, int> ul, pair<int, int> lr)
         }
         toReturn[i] = bin;
     }
+    // std::cout << "fin BUILD HIST~ " << endl;
     return toReturn;
 }
 
@@ -174,8 +176,10 @@ double stats::entropy(vector<int> &distn, int area)
 }
 
 double stats::entropy(pair<int, int> ul, pair<int, int> lr)
-{
+{   
+    // std::cout << "start entropy~ " << endl;
     vector<int> distn = buildHist(ul, lr);
     int area = rectArea(ul, lr);
+    // std::cout << "ENDED entropy~ " << endl;
     return entropy(distn, area);
 }

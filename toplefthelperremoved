@@ -117,11 +117,11 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		pair<int,int> ctrul(ctrUl_x, ctrUl_y);
 		pair<int,int> ctrlr(ctrLr_x, ctrLr_y);
 
-		double minEnt = 1000000.0;
+		double minEnt = 500.0;
 		double avgEntropy;
 		
-		// optSplitPos.first = 0;
-		// optSplitPos.second = 0;
+		optSplitPos.first = 0;
+		optSplitPos.second = 0;
 		pair<int,int> ulSubRect(0,0);
 		pair<int,int> lrSubRect((width/2)-1,(height/2)-1);
 		long rectArea = s.rectArea(ulSubRect, lrSubRect);
@@ -134,35 +134,158 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		std::cout << (unsigned int) (width/2) << endl;
 		std::cout << (unsigned int) (height/2) << endl;
 		//  QTOPLEFT
-		for (unsigned int x = ctrUl_x; x < ctrUl_x + width/2 ; x++){
-			for (unsigned int y = ctrUl_y; y < ctrUl_y + height/2 ; y ++){
-			// std::cout << "first loop start x" << x << "first loop start y" << y << endl;
+		for (unsigned int x = ctrUl_x; x < (unsigned int) (width/2); x++){
+			for (unsigned int y = ctrUl_y; y < (unsigned int) (height/2); y ++){
+				// std::cout << "start minEnt: " << minEnt << endl;
+				// if (x == (unsigned int) (width/2) - 1 && y == (unsigned int) (height/2) -1){
+				// 	std::cout << "last x and y" << endl;
+				// }
+				pair<int, int> curSplitPos;
+				curSplitPos.first = x;
+				curSplitPos.second = y;
 
-			pair<int, int> seUL = make_pair(x,y);
-			// CALL avgEnt helper function. (SE, SW, NW, NE)
-			// sum / 4 for 1 avg entropy.
+				// get Entropy
+				// unsigned int x = curSplitPos.first;
+				// unsigned int y = curSplitPos.second;
+				pair<int,int> lrSe((width/2) + x - 1,(height/2) + y - 1);
+				double entropySE = s.entropy(curSplitPos, lrSe);
 
+				pair<int,int> ulNwTopLeft(0,0);
+				pair<int,int> lrNwTopLeft(x-1,y-1);
+				pair<int,int> ulNwTopright(((width/2) + x),0);
+				pair<int,int> lrNwTopright(width-1,y-1);
+				pair<int,int> ulNwBottomLeft(0, (y+(height/2)));
+				pair<int,int> lrNwBottomLeft((x-1) , (height -1));
+				pair<int,int> ulNwBottomRight((width/2)+x, y+(height/2));
+				pair<int,int> lrNwBottomRight( (width -1), (height -1));
+				double entropyNW = getEntropyFromFour(ulNwTopLeft, lrNwTopLeft, ulNwTopright, lrNwTopright, ulNwBottomLeft, lrNwBottomLeft, ulNwBottomRight, lrNwBottomRight, s, rectArea);
+				// std::cout << "entropyNW: " << entropyNW << endl;
+
+				pair<int,int> ulSeRight((width/2) + x,y);
+				pair<int,int> lrSeRight(width -1,(height/2) + y - 1);
+				pair<int,int> ulSeLeft(0,y);
+				pair<int,int> lrSeLeft(x-1,(height/2) + y - 1);
+				double entropySW = getEntropyFromTwo(ulSeRight,lrSeRight,ulSeLeft,lrSeLeft, s, rectArea);
+
+
+				pair<int,int> ulNeTop(x,0);
+				pair<int,int> lrNeTop((width/2) + x - 1,y-1);
+				pair<int,int> ulNeBottom(x,y+(height/2));
+				pair<int,int> lrNeBottom((width/2) + x - 1,height -1);
+				double entropyNE = getEntropyFromTwo(ulNeTop,lrNeTop,ulNeBottom,lrNeBottom, s, rectArea);
+
+				avgEntropy = ((entropySE + entropyNW + entropySW + entropyNE) / 4);
+				// std::cout << "entropy: " << avgEntropy << endl;
+				// avgEntropy = getEntropyTopLeftQ(curSplitPos,rectArea, width, height, s);
+
+				// check if avgEntropy < minEntr
 				if (avgEntropy < minEnt) {
+					// std::cout << "smaller than minEnt: " << minEnt << endl;
 					minEnt = avgEntropy;
-					// std::cout << " set split point: " << x << endl;
 					optSplitPos.first = x;
 					optSplitPos.second = y;
+					// whichQ = 1;
 				}
-			// std::cout << "first x finished " << x << endl;
+				// std::cout << "finished 1 set of x: " << x << " y: "<< y << endl;
+			}
+			std::cout << "finished 1 set of x: " << x << endl;
+		}
+		std::cout << "build tree - QTOPRIGHT" << endl;
+		// TOPRIGHTQ
+		for (unsigned int x = (width/2); x < (unsigned int) (width/4)*3; x++){
+			for (unsigned int y = ctrUl_y; y < (unsigned int) (height/4)*3; y ++){
+				pair<int, int> curSplitPos;
+				curSplitPos.first = x;
+				curSplitPos.second = y;
+
+				// get Entropy
+				if (x == (unsigned int) (width/2)) {
+					// see image 1. TopRight_x==width/2
+					avgEntropy = getEntropyTopRightQNoSplit(curSplitPos,rectArea, width, height, s);
+				} else {
+					// rest of the cases
+					avgEntropy = getEntropyTopRightQ(curSplitPos,rectArea, width, height, s);
+				}
+
+				// check if avgEntropy < minEntropy
+				if (isMinEntropy(minEnt, avgEntropy)){
+					minEnt = avgEntropy;
+					optSplitPos.first = x;
+					optSplitPos.second = y;
+					whichQ = 2;
+				}
 			}
 		}
-			
+
+		// BOTTOMLEFTQ
+		for (unsigned int x = ctrUl_x; x < (unsigned int) (width/2); x++){
+			for (unsigned int y = (height/2); y < ctrLr_y; y ++){
+				pair<int, int> curSplitPos;
+				curSplitPos.first = x;
+				curSplitPos.second = y;
+
+				if(y == (unsigned int) (height/2)) {
+					avgEntropy = getEntropyBottomLeftQNoSplit(curSplitPos,rectArea, width, height, s);
+				} else {
+					avgEntropy = getEntropyBottomLeftQ(curSplitPos,rectArea, width, height, s);
+
+				}
+
+				// check if avgEntropy < minEntropy
+				if (isMinEntropy(minEnt, avgEntropy)){
+					minEnt = avgEntropy;
+					optSplitPos.first = x;
+					optSplitPos.second = y;
+					whichQ = 3;
+				}
+			}
+		}
+
+		// BOTTOMRIGHTQ() 
+		for (unsigned int x = (width/2); x < ctrLr_x; x++){
+			for (unsigned int y = (height/2); y < ctrLr_y; y ++){
+				pair<int, int> curSplitPos;
+				curSplitPos.first = x;
+				curSplitPos.second = y;
+
+				// get Entropy
+				if (x == (unsigned int) (width/2)) {
+					// all 4 perfect squares. see 4. bottomRightQ_nosplit
+					if (y == (unsigned int) (height/2)){
+						avgEntropy = getEntropyBottomRightQfourPerfectSquares(curSplitPos, rectArea, width, height, s);
+					} else {
+					// see 4. bottomRightQ_x==width/2 else case. SE SW horizonal Split
+						avgEntropy = getEntropyBottomRighNENWNoSplits(curSplitPos, rectArea, width, height, s);
+					}
+				} else if (x > (unsigned int) (width/2)) {
+					// see 4. bottomRightQ_ y = height/2. NW & SW perf squares, SE NE vertical split
+					if (y == (unsigned int) (height/2)){
+						avgEntropy = getEntropyBottomRighNWSWNoSplits(curSplitPos, rectArea, width, height, s);
+					}
+					else {
+						// see 4. bottomRight_x > width/2 and y > height/2. only NW no split. SE split in 4, rest in 2.
+						avgEntropy = getEntropyBottomRighOnlyNWnoSplit(curSplitPos, rectArea, width, height, s);
+					}
+				}
+
+				// check if avgEntropy < minEntropy
+				if (isMinEntropy(minEnt, avgEntropy)){
+					minEnt = avgEntropy;
+					optSplitPos.first = x;
+					optSplitPos.second = y;
+					whichQ = 4;
+				}
+			}
+		}
+
 		// after 4 for loops - make child image (5 cases based on the splitPoint)
 		unsigned int optX = optSplitPos.first;
-		std::cout << "optX: "<< optX << endl;
 		unsigned int optY = optSplitPos.second;
-		std::cout << "optY: "<< optY << endl;
-		// std::cout << "after 4 for loop" << endl;
+		std::cout << "after 4 for loop" << endl;
 
-		if(optX ==  width/2 && optY ==  height/2) {
+		if(optX == (unsigned int) width/2 && optY == (unsigned int) height/2) {
 			// perfect four squares 
 			// Q : k-- is correct?
-			std::cout << "stitching it ONEEEE: " << endl;
 			pair<int,int> nwUl(0,0);
 			pair<int,int> swUl(0,optY);
 			pair<int,int> neUl(optX,0);
@@ -172,44 +295,35 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			nwChild = makeImageNoStitch(k--, im, nwUl);
 			neChild = makeImageNoStitch(k--, im, neUl);
 
-		} else if ((ctrUl_x <= optX) && (optX <=  width/2) && (ctrUl_y <= optY) && (optY <= height/2)) {
-			std::cout << "stitching it TWWWWWWOOOO: " << endl;
+		} else if ((ctrUl_x <= optX) && (optX <= (unsigned int) width/2) && (ctrUl_y <= optY) && (optY <= (unsigned int) height/2)) {
 			// SE is square
 			seChild = makeImageNoStitch(k--, im, optSplitPos);
 			swChild = stitchImgVertical(k--, im, optSplitPos);
 			neChild = stitchImgHor(k--, im, optSplitPos);
 			nwChild = stitchImgVandH(k--, im, optSplitPos);
 
-		} else if (( width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= height/2)) {
-			std::cout << "stitching it THREEE: " << endl;
+		} else if (((unsigned int) width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= (unsigned int) height/2)) {
 			// SE stitch vertically
 			// sw has full image
 			pair<int,int> indexPos(optX - (width/2) , optY);
 			seChild = stitchImgVertical(k--, im, indexPos);
-			std::cout << "stitching it seChild: " << endl;
 			swChild = makeImageNoStitch(k--, im, indexPos);
-			std::cout << "stitching it swChild: " << endl;
 			nwChild = stitchImgHor(k--, im, indexPos);
-			std::cout << "stitching it nwChild: " << endl;
 			neChild = stitchImgVandH(k--, im, indexPos);
 
-		} else if ((ctrUl_x <= optX) && (optX <= width/2) && ( height/2 < optY) && (optY <= ctrLr_y)) {
+		} else if ((ctrUl_x <= optX) && (optX <= (unsigned int) width/2) && ((unsigned int) height/2 < optY) && (optY <= ctrLr_y)) {
 			// SE stitch horizontally 
 			// ne has full image
-			std::cout << "stitching it rn: " << endl;
 			pair<int,int> indexPos(optX, optY - (height/2));
 			seChild = stitchImgHor(k--, im, indexPos);
 			swChild = stitchImgVandH(k--, im, indexPos);
 			nwChild = stitchImgVertical(k--, im, indexPos);
 			neChild = makeImageNoStitch(k--, im, indexPos);
-			std::cout << "stitching done " << endl;
 
-		} else if (( width/2 < optX) && (optX <= ctrLr_x) && ( height/2 < optY) && (optY <= ctrLr_y)) {
-			std::cout << "stitching it FIVEEE: " << endl;
+		} else if (((unsigned int) width/2 < optX) && (optX <= ctrLr_x) && ((unsigned int) height/2 < optY) && (optY <= ctrLr_y)) {
 			// SE stitch vertically + horizontally 
 			// nw has full image
 			pair<int,int> indexPos(optX - (width/2), optY - (height/2));
-			std::cout << "k -- " << k-- << endl;
 			seChild = stitchImgVandH(k--, im, indexPos);
 			swChild = stitchImgHor(k--, im, indexPos);
 			nwChild = makeImageNoStitch(k--, im, indexPos);
@@ -226,9 +340,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	Node* node = new Node(optSplitPos, k, avgPixel);
 
 	// Call Recursive func here
-	std::cout << "beforeeeeee buildTree CHILDDDDD" << endl;
 	node->NW = buildTree(nwChild, k--);
-	std::cout << "buildTree CHILDDDDD done" << endl;
 	node->NE = buildTree(neChild, k--);
 	node->SE = buildTree(seChild, k--);
 	node->SW = buildTree(swChild, k--);
@@ -362,18 +474,15 @@ PNG toqutree::stitchImgVertical(int dim, PNG & im, pair<int,int> splitPoint){
 }
 
 PNG toqutree::stitchImgHor(int dim, PNG & im, pair<int,int> splitPoint){
-
-	std::cout << "stitchImgHor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-	int width = pow(2,dim);
-	int height = pow(2,dim);
+	unsigned int width = pow(2,dim);
+	unsigned int height = width;
 	PNG newIm(width, height);
 	int x = splitPoint.first; // 7
 	int y = splitPoint.second; // 7
 
 	// first Horizontal (bottom)
-	for (int i = 0; i < width; i++){
-		for (int j = 0; j < height - y; j++){
-			std::cout << "HORIZONTAL X " << x << "HORIZONTAL i "<< i << endl;
+	for (unsigned int i = 0; i < width; i++){
+		for (unsigned int j = 0; j < height - y; j++){
 			HSLAPixel * pixelNew = newIm.getPixel(i, j);
 			* pixelNew = *im.getPixel(x + i, y + height + j);
 		}

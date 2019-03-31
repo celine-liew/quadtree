@@ -240,7 +240,7 @@ private:
 
    void pruneHelper(Node * & aNode, double tol);
 
-   bool withinTolerance(Node * node, double tol, HSLAPixel rootPixel);
+   bool withinTolerance(Node * node, double tol, HSLAPixel nodePixel);
 
 };
 

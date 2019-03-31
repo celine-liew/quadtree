@@ -114,55 +114,34 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		unsigned int ctrLr_x = width - ctrUl_x - 1; //11
 		unsigned int ctrLr_y = height - ctrUl_y - 1; //11
 
-		pair<int,int> ctrul(ctrUl_x, ctrUl_y);
-		pair<int,int> ctrlr(ctrLr_x, ctrLr_y);
-
 		double minEnt = 1000000.0;
 		double avgEntropy;
-		
-		// optSplitPos.first = 0;
-		// optSplitPos.second = 0;
-		pair<int,int> ulSubRect(0,0);
-		pair<int,int> lrSubRect((width/2)-1,(height/2)-1);
-		long rectArea = s.rectArea(ulSubRect, lrSubRect);
-		// we use this var when we made child nodes: 1-TOPLEFT 2-TOPRIGHT 3-BOTTOMLEFT 4-BOTTOMRIGHT
-		int whichQ = 0;
 
-		std::cout << "build tree - QTOPLEFT" << endl;
-		std::cout << "start x " << ctrUl_x << endl;
-		std::cout << "start y " << ctrUl_y << endl;
-		std::cout << (unsigned int) (width/2) << endl;
-		std::cout << (unsigned int) (height/2) << endl;
-		//  QTOPLEFT
-		for (unsigned int x = ctrUl_x; x < ctrUl_x + width/2 ; x++){
-			for (unsigned int y = ctrUl_y; y < ctrUl_y + height/2 ; y ++){
-			// std::cout << "first loop start x" << x << "first loop start y" << y << endl;
+		for (unsigned int x = ctrUl_x; x <= ctrLr_x; x++){
+			for (unsigned int y = ctrUl_y; y <= ctrLr_y; y ++){
+				// when SE is a full set
+				if((x+ (width/2) -1 <= width -1) && (y + (height/2) -1 < height -1)) {
+					pair<int,int> seUl(x,y);
+					pair<int,int> seLr(x + width/2 -1, y + height/2 -1);
+					if (seLr.first == width -1)
 
-			pair<int, int> seUL = make_pair(x,y);
-			// CALL avgEnt helper function. (SE, SW, NW, NE)
-			// sum / 4 for 1 avg entropy.
-
-				if (avgEntropy < minEnt) {
-					minEnt = avgEntropy;
-					// std::cout << " set split point: " << x << endl;
-					optSplitPos.first = x;
-					optSplitPos.second = y;
 				}
-			// std::cout << "first x finished " << x << endl;
+
+					}
+				} 
 			}
 		}
-			
+
+		
+
 		// after 4 for loops - make child image (5 cases based on the splitPoint)
 		unsigned int optX = optSplitPos.first;
-		std::cout << "optX: "<< optX << endl;
 		unsigned int optY = optSplitPos.second;
-		std::cout << "optY: "<< optY << endl;
-		// std::cout << "after 4 for loop" << endl;
+		std::cout << "after 4 for loop" << endl;
 
-		if(optX ==  width/2 && optY ==  height/2) {
+		if(optX == (unsigned int) width/2 && optY == (unsigned int) height/2) {
 			// perfect four squares 
 			// Q : k-- is correct?
-			std::cout << "stitching it ONEEEE: " << endl;
 			pair<int,int> nwUl(0,0);
 			pair<int,int> swUl(0,optY);
 			pair<int,int> neUl(optX,0);
@@ -172,44 +151,35 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			nwChild = makeImageNoStitch(k--, im, nwUl);
 			neChild = makeImageNoStitch(k--, im, neUl);
 
-		} else if ((ctrUl_x <= optX) && (optX <=  width/2) && (ctrUl_y <= optY) && (optY <= height/2)) {
-			std::cout << "stitching it TWWWWWWOOOO: " << endl;
+		} else if ((ctrUl_x <= optX) && (optX <= (unsigned int) width/2) && (ctrUl_y <= optY) && (optY <= (unsigned int) height/2)) {
 			// SE is square
 			seChild = makeImageNoStitch(k--, im, optSplitPos);
 			swChild = stitchImgVertical(k--, im, optSplitPos);
 			neChild = stitchImgHor(k--, im, optSplitPos);
 			nwChild = stitchImgVandH(k--, im, optSplitPos);
 
-		} else if (( width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= height/2)) {
-			std::cout << "stitching it THREEE: " << endl;
+		} else if (((unsigned int) width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= (unsigned int) height/2)) {
 			// SE stitch vertically
 			// sw has full image
 			pair<int,int> indexPos(optX - (width/2) , optY);
 			seChild = stitchImgVertical(k--, im, indexPos);
-			std::cout << "stitching it seChild: " << endl;
 			swChild = makeImageNoStitch(k--, im, indexPos);
-			std::cout << "stitching it swChild: " << endl;
 			nwChild = stitchImgHor(k--, im, indexPos);
-			std::cout << "stitching it nwChild: " << endl;
 			neChild = stitchImgVandH(k--, im, indexPos);
 
-		} else if ((ctrUl_x <= optX) && (optX <= width/2) && ( height/2 < optY) && (optY <= ctrLr_y)) {
+		} else if ((ctrUl_x <= optX) && (optX <= (unsigned int) width/2) && ((unsigned int) height/2 < optY) && (optY <= ctrLr_y)) {
 			// SE stitch horizontally 
 			// ne has full image
-			std::cout << "stitching it rn: " << endl;
 			pair<int,int> indexPos(optX, optY - (height/2));
 			seChild = stitchImgHor(k--, im, indexPos);
 			swChild = stitchImgVandH(k--, im, indexPos);
 			nwChild = stitchImgVertical(k--, im, indexPos);
 			neChild = makeImageNoStitch(k--, im, indexPos);
-			std::cout << "stitching done " << endl;
 
-		} else if (( width/2 < optX) && (optX <= ctrLr_x) && ( height/2 < optY) && (optY <= ctrLr_y)) {
-			std::cout << "stitching it FIVEEE: " << endl;
+		} else if (((unsigned int) width/2 < optX) && (optX <= ctrLr_x) && ((unsigned int) height/2 < optY) && (optY <= ctrLr_y)) {
 			// SE stitch vertically + horizontally 
 			// nw has full image
 			pair<int,int> indexPos(optX - (width/2), optY - (height/2));
-			std::cout << "k -- " << k-- << endl;
 			seChild = stitchImgVandH(k--, im, indexPos);
 			swChild = stitchImgHor(k--, im, indexPos);
 			nwChild = makeImageNoStitch(k--, im, indexPos);
@@ -226,9 +196,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	Node* node = new Node(optSplitPos, k, avgPixel);
 
 	// Call Recursive func here
-	std::cout << "beforeeeeee buildTree CHILDDDDD" << endl;
 	node->NW = buildTree(nwChild, k--);
-	std::cout << "buildTree CHILDDDDD done" << endl;
 	node->NE = buildTree(neChild, k--);
 	node->SE = buildTree(seChild, k--);
 	node->SW = buildTree(swChild, k--);
@@ -362,18 +330,15 @@ PNG toqutree::stitchImgVertical(int dim, PNG & im, pair<int,int> splitPoint){
 }
 
 PNG toqutree::stitchImgHor(int dim, PNG & im, pair<int,int> splitPoint){
-
-	std::cout << "stitchImgHor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-	int width = pow(2,dim);
-	int height = pow(2,dim);
+	unsigned int width = pow(2,dim);
+	unsigned int height = width;
 	PNG newIm(width, height);
 	int x = splitPoint.first; // 7
 	int y = splitPoint.second; // 7
 
 	// first Horizontal (bottom)
-	for (int i = 0; i < width; i++){
-		for (int j = 0; j < height - y; j++){
-			std::cout << "HORIZONTAL X " << x << "HORIZONTAL i "<< i << endl;
+	for (unsigned int i = 0; i < width; i++){
+		for (unsigned int j = 0; j < height - y; j++){
 			HSLAPixel * pixelNew = newIm.getPixel(i, j);
 			* pixelNew = *im.getPixel(x + i, y + height + j);
 		}
