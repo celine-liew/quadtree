@@ -39,7 +39,9 @@ toqutree::toqutree(PNG & imIn, int k){
 /* that imIn is large enough to contain an image of that size. */
 
 /* your code here */
+std::cout << "making tree now" << endl;
 	if (imIn.width() == pow(2,k) && imIn.height() == pow(2,k)){
+		std::cout << "going to build tree here!" << endl;
 		buildTree(imIn, k);
 	} else {
 	pair<int,int> ctrPoint;
@@ -53,6 +55,7 @@ toqutree::toqutree(PNG & imIn, int k){
 				* pixelSub = *imIn.getPixel(ctrPoint.first - pow(2,k-1) + i, ctrPoint.second - pow(2,k-1) + j);
 			}
 		}
+		std::cout << "going to build tree 2" << endl;
 		buildTree(subIm, k);
 	}
 
@@ -65,7 +68,7 @@ int toqutree::size() {
 
 
 toqutree::Node * toqutree::buildTree(PNG & im, int k) {
-
+	std::cout << "entered BuildTree" << endl;
 	stats s(im);
 	int width = im.width();
 	int height = im.height();
@@ -83,7 +86,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	PNG seChild(width/2, height/2);
 	PNG swChild(width/2, height/2);
 	PNG neChild(width/2, height/2);
-	
+	std::cout << "BuildTree before if k = 1" << endl;
 	if (k == 1){
 
 		HSLAPixel * pixelNewNW = nwChild.getPixel(0, 0);
@@ -101,9 +104,8 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	}
 
 	
-
 	else {
-
+		std::cout << "build tree - check else" << endl;
 		// find centre
 		unsigned int ctrUl_x = width/4; //4
 		unsigned int ctrUl_y = height/4; // 4
@@ -124,9 +126,15 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		// we use this var when we made child nodes: 1-TOPLEFT 2-TOPRIGHT 3-BOTTOMLEFT 4-BOTTOMRIGHT
 		int whichQ = 0;
 
+		std::cout << "build tree - QTOPLEFT" << endl;
+		std::cout << (unsigned int) (width/2) << endl;
+		std::cout << (unsigned int) (height/2) << endl;
 		//  QTOPLEFT
 		for (unsigned int x = ctrUl_x; x < (unsigned int) (width/2); x++){
 			for (unsigned int y = ctrUl_y; y < (unsigned int) (height/2); y ++){
+				if (x == (unsigned int) (width/2) - 1 && y == (unsigned int) (height/2) -1){
+					std::cout << "last x and y" << endl;
+				}
 				pair<int, int> curSplitPos;
 				curSplitPos.first = x;
 				curSplitPos.second = y;
@@ -142,8 +150,9 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 					whichQ = 1;
 				}
 			}
+			// std::cout << "finished QtopLEFT" << endl;
 		}
-
+		std::cout << "build tree - QTOPRIGHT" << endl;
 		// TOPRIGHTQ
 		for (unsigned int x = (width/2); x < (unsigned int) (width/4)*3; x++){
 			for (unsigned int y = ctrUl_y; y < (unsigned int) (height/4)*3; y ++){
@@ -234,6 +243,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		// after 4 for loops - make child image (5 cases based on the splitPoint)
 		unsigned int optX = optSplitPos.first;
 		unsigned int optY = optSplitPos.second;
+		std::cout << "after 4 for loop" << endl;
 
 		if(optX == (unsigned int) width/2 && optY == (unsigned int) height/2) {
 			// perfect four squares 
@@ -329,10 +339,11 @@ PNG toqutree::render(){
 
 /* oops, i left the implementation of this one in the file! */
 void toqutree::prune(double tol){
-	//TODO NOTE: we need to pass in avgColor of ROOT because prune will be recursively called and we
-	// will need to remember the avgColour of the root!!!!!!
-	// prune(avgColor, root, tol); 
-
+	//TODO NOTE: no need to pass in avgCol. just calculate based on HSLA dist.
+	// if (root->NE == NULL){ // no children, nothing to prune.
+	// 	return; 
+	// }
+	pruneHelper(root, tol);
 }
 
 /* called by destructor and assignment operator*/
@@ -354,7 +365,19 @@ void toqutree::clear(Node * & curr){
 /* done */
 /* called by assignment operator and copy constructor */
 toqutree::Node * toqutree::copy(const Node * other) {
+	if (other == NULL) {
+        return NULL;
+    }
+	Node * newNode = new Node(other->center, other->dimension, other->avg);
 
+	if (other->NW != NULL)
+	{
+		newNode->NW = copy(other->NW);
+		newNode->NE = copy(other->NE);
+		newNode->SE = copy(other->SE);
+		newNode->SW = copy(other->SW);
+	}
+	 return newNode;
 /* your code here */
 }
 
@@ -489,6 +512,7 @@ bool toqutree::isMinEntropy(double min, double avg){
 }
 
 double toqutree::getEntropyTopLeftQ(pair<int, int> curSplitPos, long rectArea, int width, int height, stats s) {
+	// std::cout << "build tree - get Entropy Top Left Q" << endl;
 	int x = curSplitPos.first;
 	int y = curSplitPos.second;
 	pair<int,int> lrSe((width/2) + x - 1,(height/2) + y - 1);
@@ -503,7 +527,7 @@ double toqutree::getEntropyTopLeftQ(pair<int, int> curSplitPos, long rectArea, i
 	pair<int,int> ulNwBottomRight((width/2)+x, y+(height/2));
 	pair<int,int> lrNwBottomRight( (width -1), (height -1));
 	double entropyNW = getEntropyFromFour(ulNwTopLeft, lrNwTopLeft, ulNwTopright, lrNwTopright, ulNwBottomLeft, lrNwBottomLeft, ulNwBottomRight, lrNwBottomRight, s, rectArea);
-
+	// std::cout << "entropyNW: " << entropyNW << endl;
 
 	pair<int,int> ulSeRight((width/2) + x,y);
 	pair<int,int> lrSeRight(width -1,(height/2) + y - 1);
@@ -776,8 +800,42 @@ double toqutree::getEntropyBottomLeftQ(pair<int, int> curSplitPos, long rectArea
 
 
 PNG toqutree::renderHelper(PNG & toRender, Node * root){
-	
+	//TODO!!!
 	return toRender;
+}
+
+void toqutree::pruneHelper(Node * & aNode, double tol) {
+	std::cout << "prunehelper" << endl;
+	if (aNode == NULL){ // no children, nothing to prune.
+		return;
+	}
+	if (withinTolerance(aNode, tol, aNode->avg)) {
+		std::cout << "clearing" << endl;
+		clear(aNode->NE);
+		clear(aNode->NW);
+		clear(aNode->SE);
+		clear(aNode->SW);
+	} else {
+		std::cout << "else prune" << endl;
+		pruneHelper(aNode->NE,tol);
+		pruneHelper(aNode->NW,tol);
+		pruneHelper(aNode->SE,tol);
+		pruneHelper(aNode->SW,tol);
+	}	
+}
+
+bool toqutree::withinTolerance(Node * node,  double tol, HSLAPixel nodePixel){
+	// bool withinTol = false;
+	std::cout << "calculating" << endl;
+	if (node->NE == NULL){
+		if ((((node->avg).dist(nodePixel)) <= tol)){
+			return true;
+		}
+		return false;
+	}
+
+	return (withinTolerance(node->NE, tol, nodePixel) && withinTolerance(node->NW, tol, nodePixel)
+	&& withinTolerance(node->SE, tol, nodePixel) && withinTolerance(node->SW, tol, nodePixel));
 }
 
 

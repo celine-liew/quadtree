@@ -111,18 +111,20 @@ TEST_CASE("stats::basic entropy","[weight=1][part=stats]"){
 //     REQUIRE(out==img);
 // }
 
-// TEST_CASE("toqutree::basic prune","[weight=1][part=toqutree]"){
-//     PNG img;
-//     img.readFromFile("images/ada.png");
+TEST_CASE("toqutree::basic prune","[weight=1][part=toqutree]"){
+    std::cout << "basic prune" << endl;
+    PNG img;
+    img.readFromFile("images/ada.png");
     
-//     toqutree t1(img,9);
+    toqutree t1(img,9);
+    std::cout << "after toque" << endl;
 
-//     t1.prune(0.05);
-//     PNG result = t1.render();
+    t1.prune(0.05);
+    PNG result = t1.render();
 
-//     PNG expected; expected.readFromFile("images/adaPrune.05.png");
-//     result.convert();
+    PNG expected; expected.readFromFile("images/adaPrune.05.png");
+    result.convert();
 
-//     REQUIRE(expected==result);
-// }
+    REQUIRE(expected==result);
+}
 
