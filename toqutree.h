@@ -211,6 +211,10 @@ private:
 
    double getEntropyTopRightQ(pair<int, int> curSplitPos, long rectArea, int twokWidth, int twokHeight, stats s);
 
+   double getEntropyBottomLeftQ(pair<int, int> curSplitPos, long rectArea, int twokWidth, int twokHeight, stats s);
+
+   double getEntropyBottomLeftQNoSplit(pair<int, int> curSplitPos, long rectArea, int twokWidth, int twokHeight, stats s);
+
    double getEntropyFromFour(pair<int,int> ulTopRight, pair<int,int> lrTopRight, 
       pair<int,int> ulBottomRight, pair<int,int> lrBottomRight, 
       pair<int,int> ulTopLeft, pair<int,int> lrTopLeft, 

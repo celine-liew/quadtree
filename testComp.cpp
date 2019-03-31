@@ -87,17 +87,17 @@ TEST_CASE("stats::basic entropy","[weight=1][part=stats]"){
     REQUIRE(result == 2);
 }
 
-TEST_CASE("toqutree::basic ctor render","[weight=1][part=toqutree]"){
-    PNG img;
-    img.readFromFile("images/stanleySquare.png");
+// TEST_CASE("toqutree::basic ctor render","[weight=1][part=toqutree]"){
+//     PNG img;
+//     img.readFromFile("images/stanleySquare.png");
 
-    toqutree t1(img,9);
+//     toqutree t1(img,9);
 
-    PNG out = t1.render();
-    out.convert();
+//     PNG out = t1.render();
+//     out.convert();
 
-    REQUIRE(out==img);
-}
+//     REQUIRE(out==img);
+// }
 
 // TEST_CASE("toqutree::basic copy","[weight=1][part=toqutree]"){
 //     PNG img;

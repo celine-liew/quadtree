@@ -125,8 +125,8 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		int whichQ = 0;
 
 		//  QTOPLEFT
-		for (unsigned int x = ctrUl_x; x < (width/2); x++){
-			for (unsigned int y = ctrUl_y; y < (height/2); y ++){
+		for (unsigned int x = ctrUl_x; x < (unsigned int) (width/2); x++){
+			for (unsigned int y = ctrUl_y; y < (unsigned int) (height/2); y ++){
 				pair<int, int> curSplitPos;
 				curSplitPos.first = x;
 				curSplitPos.second = y;
@@ -145,14 +145,14 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		}
 
 		// TOPRIGHTQ
-		for (unsigned int x = (width/2); x < (width/4)*3; x++){
-			for (unsigned int y = ctrUl_y; y < (height/4)*3; y ++){
+		for (unsigned int x = (width/2); x < (unsigned int) (width/4)*3; x++){
+			for (unsigned int y = ctrUl_y; y < (unsigned int) (height/4)*3; y ++){
 				pair<int, int> curSplitPos;
 				curSplitPos.first = x;
 				curSplitPos.second = y;
 
 				// get Entropy
-				if (x == (width/2)) {
+				if (x == (unsigned int) (width/2)) {
 					// see image 1. TopRight_x==width/2
 					avgEntropy = getEntropyTopRightQNoSplit(curSplitPos,rectArea, width, height, s);
 				} else {
@@ -165,7 +165,31 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 					minEnt = avgEntropy;
 					optSplitPos.first = x;
 					optSplitPos.second = y;
-					whichQ = 1;
+					whichQ = 2;
+				}
+			}
+		}
+
+		// BOTTOMLEFTQ
+		for (unsigned int x = ctrUl_x; x < (unsigned int) (width/2); x++){
+			for (unsigned int y = (height/2); y < ctrLr_y; y ++){
+				pair<int, int> curSplitPos;
+				curSplitPos.first = x;
+				curSplitPos.second = y;
+
+				if(y == (unsigned int) (height/2)) {
+					avgEntropy = getEntropyBottomLeftQNoSplit(curSplitPos,rectArea, width, height, s);
+				} else {
+					avgEntropy = getEntropyBottomLeftQ(curSplitPos,rectArea, width, height, s);
+
+				}
+
+				// check if avgEntropy < minEntropy
+				if (isMinEntropy(minEnt, avgEntropy)){
+					minEnt = avgEntropy;
+					optSplitPos.first = x;
+					optSplitPos.second = y;
+					whichQ = 3;
 				}
 			}
 		}
@@ -178,17 +202,17 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 				curSplitPos.second = y;
 
 				// get Entropy
-				if (x == (width/2)) {
+				if (x == (unsigned int) (width/2)) {
 					// all 4 perfect squares. see 4. bottomRightQ_nosplit
-					if (y == (height/2)){
+					if (y == (unsigned int) (height/2)){
 						avgEntropy = getEntropyBottomRightQfourPerfectSquares(curSplitPos, rectArea, width, height, s);
 					} else {
 					// see 4. bottomRightQ_x==width/2 else case. SE SW horizonal Split
 						avgEntropy = getEntropyBottomRighNENWNoSplits(curSplitPos, rectArea, width, height, s);
 					}
-				} else if (x > (width/2)) {
+				} else if (x > (unsigned int) (width/2)) {
 					// see 4. bottomRightQ_ y = height/2. NW & SW perf squares, SE NE vertical split
-					if (y == (height/2)){
+					if (y == (unsigned int) (height/2)){
 						avgEntropy = getEntropyBottomRighNWSWNoSplits(curSplitPos, rectArea, width, height, s);
 					}
 					else {
@@ -202,15 +226,32 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 					minEnt = avgEntropy;
 					optSplitPos.first = x;
 					optSplitPos.second = y;
-					whichQ = 1;
+					whichQ = 4;
 				}
 			}
 		}
 
+		// after 4 for loops - make child image (5 cases based on the splitPoint)
+		unsigned int optX = optSplitPos.first;
+		unsigned int optY = optSplitPos.second;
 
+		if(optX == width/2 && optY == height/2) {
+			// perfect four squares 
+		} else if ((ctrUl_x <= optX) && (optX <= width/2) && (ctrUl_y <= optY) && (optY <= height/2)) {
+			// SE is square
 
+		} else if ((width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= height/2)) {
+			// SE stitch vertically
 
-		// after 4 for loops - make child image, check whichQ to decide how we split it
+		} else if ((ctrUl_x <= optX) && (optX <= width/2) && (height/2 < optY) && (optY <= ctrLr_y)) {
+			// SE stitch horizontally 
+
+		} else if ((width/2 < optX) && (optX <= ctrLr_x) && (height/2 < optY) && (optY <= ctrLr_y)) {
+			// SE stitch vertically + horizontally 
+
+		} else {
+			std::cout << "Something is wrong!(buildTree)" << endl;
+		}
 	}
 
 	// for splitting
@@ -329,7 +370,7 @@ PNG toqutree::stitchImgVertical(int dim, PNG & im, pair<int,int> splitPoint){
 	}
 
 	// second vertical
-	for (unsigned int i = width - x ; i < x; i++){
+	for (unsigned int i = width - x ; i < (unsigned int) x; i++){
 		for (unsigned int j = 0 ; j < height; j++){
 			HSLAPixel * pixelNew = newIm.getPixel(i, j);
 			* pixelNew = *im.getPixel(i, y + j);
@@ -357,7 +398,7 @@ PNG toqutree::stitchImgHor(int dim, PNG & im, pair<int,int> splitPoint){
 
 	// second Horizontal (top)
 	for (unsigned int i = 0; i < width; i++){
-		for (unsigned int j = height - y; j < y; j++){
+		for (unsigned int j = height - y; j <(unsigned int) y; j++){
 			HSLAPixel * pixelNew = newIm.getPixel(i, j);
 			pixelNew = im.getPixel(x + i, j);
 		}
@@ -375,32 +416,32 @@ PNG toqutree::stitchImgVandH(int dim, PNG & im, pair<int,int> splitPoint){
 	int y = splitPoint.second; // 7
 
 	// #4 bottom right corner
-	for (unsigned int i = 0; i < width - x; i++){
-		for (unsigned int j = 0; j < height - y; j++){
+	for (unsigned int i = 0; i < (unsigned int) width - x; i++){
+		for (unsigned int j = 0; j < (unsigned int) height - y; j++){
 			HSLAPixel * pixelNew = newIm.getPixel(i, j);
 			* pixelNew = *im.getPixel( x + width + i, y + height + j);
 		}
 	}
 
 	// #3 bottom left corner
-	for (unsigned int i = width - x; i < x; i++){
-		for (unsigned int j = 0; j < height - y; j++){
+	for (unsigned int i = width - x; i < (unsigned int) x; i++){
+		for (unsigned int j = 0; j < (unsigned int) height - y; j++){
 			HSLAPixel * pixelNew = newIm.getPixel(i, j);
 			* pixelNew = *im.getPixel(i, y + height + j);
 		}
 	}
 
 	// #2 Top right corner
-	for (unsigned int i = 0; i < width - x; i++){
-		for (unsigned int j = height - y; j < y; j++){
+	for (unsigned int i = 0; i < (unsigned int) width - x; i++){
+		for (unsigned int j = height - y; j < (unsigned int) y; j++){
 			HSLAPixel * pixelNew = newIm.getPixel(i, j);
 			* pixelNew = *im.getPixel( x + width + i, j);
 		}
 	}
 
 	// #1 Top left corner
-	for (unsigned int i = width - x; i < x; i++){
-		for (unsigned int j = height - y; j < y; j++){
+	for (unsigned int i = width - x; i < (unsigned int) x; i++){
+		for (unsigned int j = height - y; j < (unsigned int) y; j++){
 			HSLAPixel * pixelNew = newIm.getPixel(i, j);
 			* pixelNew = *im.getPixel(i, j);
 		}
@@ -493,7 +534,7 @@ double toqutree::getEntropyTopRightQ(pair<int, int> curSplitPos, long rectArea, 
 	pair<int,int> lrNwTop(x-1, y-1);
 	pair<int,int> ulNwBottom(x- (twokWidth/2), y+(twokHeight/2));
 	pair<int,int> lrNwBottom(x-1, twokHeight- 1);
-	double entropyNw = getEntropyFromTwo(ulNwTop,lrNwTop, ulNwBottom, lrNwBottom, s, rectArea);
+	double entropyNW = getEntropyFromTwo(ulNwTop,lrNwTop, ulNwBottom, lrNwBottom, s, rectArea);
 
 	pair<int,int> ulNeTopRight(x, 0);   
 	pair<int,int> lrNeTopRight(twokWidth-1, y-1);
@@ -503,14 +544,15 @@ double toqutree::getEntropyTopRightQ(pair<int, int> curSplitPos, long rectArea, 
 	pair<int,int> lrNeTopLeft(x-(twokWidth/2)-1, y-1);
 	pair<int,int> ulNeBottomLeft(0, y+(twokHeight/2));
 	pair<int,int> lrNeBottomLeft(x-(twokWidth/2)-1, twokHeight-1);
-	double entropyNe = getEntropyFromFour(ulNeTopRight, lrNeTopRight, ulNeBottomRight, lrNeBottomRight, ulNeTopLeft, lrNeTopLeft, ulNeBottomLeft, lrNeBottomLeft, s, rectArea);
+	double entropyNE = getEntropyFromFour(ulNeTopRight, lrNeTopRight, ulNeBottomRight, lrNeBottomRight, ulNeTopLeft, lrNeTopLeft, ulNeBottomLeft, lrNeBottomLeft, s, rectArea);
 
+	return (entropySE + entropyNW + entropySW + entropyNE) / 4;
 }
 
 double toqutree::getEntropyFromFour(pair<int,int> ulTopRight, pair<int,int> lrTopRight, pair<int,int> ulBottomRight,
 pair<int,int> lrBottomRight, pair<int,int> ulTopLeft, pair<int,int> lrTopLeft, pair<int,int> ulBottomLeft,pair<int,int> lrBottomLeft, stats s, long rectArea) {
-	double entropy = ((s.entropy(ulTopRight, lrTopLeft) * s.rectArea(ulTopLeft, lrTopLeft))
-						+ (s.entropy(ulTopRight, ulTopRight) * s.rectArea(ulTopRight, ulTopRight))
+	double entropy = ((s.entropy(ulTopLeft, lrTopLeft) * s.rectArea(ulTopLeft, lrTopLeft))
+						+ (s.entropy(ulTopRight, lrTopRight) * s.rectArea(ulTopRight, lrTopRight))
 						+ (s.entropy(ulBottomLeft, lrBottomLeft) * s.rectArea(ulBottomLeft, lrBottomLeft))
 						+ (s.entropy(ulBottomRight, lrBottomRight) * s.rectArea(ulBottomRight, lrBottomRight)))
 						/rectArea;
@@ -519,7 +561,7 @@ pair<int,int> lrBottomRight, pair<int,int> ulTopLeft, pair<int,int> lrTopLeft, p
 
 double toqutree::getEntropyFromTwo(pair<int,int> ulTop, pair<int,int> lrTop, pair<int,int> ulBottom,
 pair<int,int> lrBottom, stats s, long rectArea) {
-	double entropy = (((s.entropy(ulTop,lrTop) * (s.rectArea(ulBottom,lrBottom)))
+	double entropy = (((s.entropy(ulTop,lrTop) * (s.rectArea(ulTop,lrTop)))
 					  + (s.entropy(ulBottom,lrBottom) * (s.rectArea(ulBottom,lrBottom))))
 					  / rectArea);
 
@@ -640,8 +682,72 @@ double toqutree::getEntropyBottomRighOnlyNWnoSplit(pair<int, int> curSplitPos, l
 	return (entropySE + entropyNW + entropySW + entropyNE) / 4;
 }
 
+double toqutree::getEntropyBottomLeftQNoSplit(pair<int, int> curSplitPos, long rectArea, int twokWidth, int twokheight, stats s) {
+	int x = curSplitPos.first;
+	int y = curSplitPos.second;
+
+	pair<int,int> ulSE(x, y);   
+	pair<int,int> lrSE(x+(twokWidth/2)-1, twokheight -1);
+	double entropySE = s.entropy(ulSE, lrSE);
+
+	pair<int,int> ulNE(x, 0);   
+	pair<int,int> lrNE(x+(twokWidth/2)-1, y-1);
+	double entropyNE = s.entropy(ulNE,lrNE);
+
+	pair<int,int> ulNWLeft(x+(twokWidth/2), 0);   
+	pair<int,int> lrNWLeft(twokWidth -1, y-1);
+	pair<int,int> ulNWRight(0, 0);   
+	pair<int,int> lrNWRight(x-1, y -1);
+	double entropyNW = getEntropyFromTwo(ulNWLeft,lrNWLeft,ulNWRight,lrNWRight,s,rectArea);
+
+	pair<int,int> ulSWLeft(x+(twokWidth/2), y);   
+	pair<int,int> lrSWLeft(twokWidth -1, twokheight -1);
+	pair<int,int> ulSWRight(0, y);   
+	pair<int,int> lrSWRight(x-1, twokheight -1);
+	double entropySW = getEntropyFromTwo(ulSWLeft,lrSWLeft,ulSWRight,lrSWRight,s,rectArea);
+
+	return (entropySE + entropyNW + entropySW + entropyNE) / 4;
+}
+
+double toqutree::getEntropyBottomLeftQ(pair<int, int> curSplitPos, long rectArea, int twokWidth, int twokheight, stats s) {
+	int x = curSplitPos.first;
+	int y = curSplitPos.second;
+
+	pair<int,int> ulSETop(x, 0);   
+	pair<int,int> lrSETop(x+(twokWidth/2) -1, y-(twokheight/2) -1);
+	pair<int,int> ulSEBottom(x, y);   
+	pair<int,int> lrSEBottom(x+(twokWidth/2) -1, twokheight -1);
+	double entropySE = getEntropyFromTwo(ulSETop,lrSETop,ulSEBottom,lrSEBottom,s,rectArea);
+
+	pair<int,int> ulNE(x, y-(twokheight/2));   
+	pair<int,int> lrNE(x+(twokWidth/2) -1, y-1);
+	double entropyNE = s.entropy(ulNE,lrNE);
+
+	pair<int,int> ulNWLeft(0, y-(twokheight/2));   
+	pair<int,int> lrNWLeft(x-1, y-1);
+	pair<int,int> ulNWRight(x+(twokWidth/2), y-(twokheight/2));   
+	pair<int,int> lrNWRight(twokWidth -1, y-1);
+	double entropyNW = getEntropyFromTwo(ulNWLeft,lrNWLeft,ulNWRight,lrNWRight,s,rectArea);
+
+	pair<int,int> ulSWTopLeft(0, 0);   
+	pair<int,int> lrSWTopLeft(x-1, y-(twokheight/2) -1);
+	pair<int,int> ulSWTopRight(x+(twokWidth/2), 0);   
+	pair<int,int> lrSWTopRight(twokWidth-1, y-(twokheight/2) -1);
+	pair<int,int> ulSWBottomLeft(0, y);   
+	pair<int,int> lrSWBottomLeft(x-1, twokheight -1);
+	pair<int,int> ulSWBottomRight(x+(twokWidth/2), y);   
+	pair<int,int> lrSWBottomRight(twokWidth-1, twokheight -1);
+	double entropySW = getEntropyFromFour(ulSWTopLeft,lrSWTopLeft,ulSWTopRight,lrSWTopRight,ulSWBottomLeft,lrSWBottomLeft,ulSWBottomRight,lrSWBottomRight,s,rectArea);
+
+	return (entropySE + entropyNW + entropySW + entropyNE) / 4;
+
+	}
+
+
 PNG toqutree::renderHelper(PNG & toRender, Node * root){
 	
 	return toRender;
 }
+
+
 
