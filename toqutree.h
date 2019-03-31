@@ -197,7 +197,7 @@ private:
 
    PNG stitchImgVertical(int dim, PNG &im, pair<int,int> splitPoint);
    
-   PNG makeImage(int dim, PNG & im, pair<int,int> splitPoint);
+   PNG makeImageNoStitch(int dim, PNG & im, pair<int,int> splitPoint);
    
    PNG stitchImgVandH(int dim, PNG & im, pair<int,int> splitPoint);
 
