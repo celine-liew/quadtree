@@ -74,6 +74,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	std::cout << "entered BuildTree when k is" << k << endl;
 	stats s(im);
 	int width = im.width();
+	std::cout << "entered BuildTree when width is" << width << endl;
 	int height = im.height();
 	pair<int,int> ul(0,0);
 	pair<int,int> lr(width - 1, height - 1);
@@ -98,7 +99,9 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	if (k == 1){
 		std::cout << "BuildTree when k = 1 finally !!" << endl;
 		HSLAPixel * pixelNewNW = nwChild.getPixel(0, 0);
-		pixelNewNW = im.getPixel(0,0);
+		std::cout << "getpixel nwChild !!" << endl;
+		*pixelNewNW = *im.getPixel(0,0);
+		std::cout << "getpixel original img !!" << endl;
 
 		HSLAPixel * pixelNewSe = seChild.getPixel(0, 0);
 		pixelNewSe = im.getPixel(1,1);
@@ -197,10 +200,11 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	Node* node = new Node(optSplitPos, k, avgPixel);
 
 	// Call Recursive func here
-	node->NW = buildTree(nwChild, k--);
-	node->NE = buildTree(neChild, k--);
-	node->SE = buildTree(seChild, k--);
-	node->SW = buildTree(swChild, k--);
+	int nextK = k -1;
+	node->NW = buildTree(nwChild, nextK);
+	node->NE = buildTree(neChild, nextK);
+	node->SE = buildTree(seChild, nextK);
+	node->SW = buildTree(swChild, nextK);
 
 	return node;
 }
