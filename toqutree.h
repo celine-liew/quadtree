@@ -34,6 +34,7 @@ private:
    /**
     * The Node class is private to the tree class via the principle of
     * encapsulation---the end user does not need to know our node-based
+    * 
     * implementation details.
     * 
     * Assumes the current node is a 2^dim x 2^dim square whose upper left
@@ -195,14 +196,6 @@ private:
 
    double getQuadEntropy(pair<int, int> quadUL, stats &s, int dim);
 
-   PNG stitchImgHor(int dim, PNG &im, pair<int,int> splitPoint);
-
-   PNG stitchImgVertical(int dim, PNG &im, pair<int,int> splitPoint);
-   
-   PNG makeImageNoStitch(int dim, PNG & im, pair<int,int> splitPoint);
-   
-   PNG stitchImgVandH(int dim, PNG & im, pair<int,int> splitPoint);
-
    double getEntropy(PNG &im);
 
    bool isMinEntropy(double min, double avg);
@@ -238,7 +231,9 @@ private:
    double getEntropyBottomRighOnlyNWnoSplit(pair<int, int> curSplitPos, long rectArea, 
    int twokWidth, int twokheight, stats s);
    
-   PNG renderHelper(PNG & toRender, Node * root);
+   PNG renderHelper(PNG & resultImg, Node * root, int dim);
+
+   HSLAPixel findPixel(toqutree::Node* root, int dim, int x, int y);
 
    void pruneHelper(Node * & aNode, double tol);
 

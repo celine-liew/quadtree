@@ -96,7 +96,7 @@ HSLAPixel stats::getAvg(pair<int, int> ul, pair<int, int> lr)
         avgHueY = (sumHueY[lr_x][lr_y] / area);
         pixel.s = (sumSat[lr_x][lr_y]) / area;
         pixel.l = (sumLum[lr_x][lr_y] / area);
-        std::cout << sumLum[lr_x][lr_y] << endl;
+        //std::cout << sumLum[lr_x][lr_y] << endl;
     }
     if (ul_x > 0 && ul_y > 0)
     {   
