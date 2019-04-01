@@ -242,6 +242,8 @@ private:
 
    bool withinTolerance(Node * node, double tol, HSLAPixel nodePixel);
 
+   PNG makeNewImg(int subImgK, PNG & im, pair<int,int> ul);
+
 };
 
 #endif

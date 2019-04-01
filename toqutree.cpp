@@ -153,71 +153,29 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		}
 			
 		// after 4 for loops - make child image (5 cases based on the splitPoint)
-		unsigned int optX = optSplitPos.first;
-		std::cout << "optX: "<< optX << endl;
-		unsigned int optY = optSplitPos.second;
-		std::cout << "optY: "<< optY << endl;
-		// std::cout << "after 4 for loop" << endl;
 
-		if(optX ==  width/2 && optY ==  height/2) {
-			// perfect four squares 
-			// Q : k-- is correct?
-			std::cout << "stitching it ONEEEE: " << endl;
-			pair<int,int> nwUl(0,0);
-			pair<int,int> swUl(0,optY);
-			pair<int,int> neUl(optX,0);
+		unsigned int seUlX = optSplitPos.first;
+		unsigned int seUlY = optSplitPos.second;
+		int parentLen = (int) pow(2, k);
+		int childLen = (int) pow(2, k - 1);
 
-			seChild = makeImageNoStitch(k--, im, optSplitPos);
-			swChild = makeImageNoStitch(k--, im, swUl);
-			nwChild = makeImageNoStitch(k--, im, nwUl);
-			neChild = makeImageNoStitch(k--, im, neUl);
+		pair<int,int> swUl;
+		swUl.first  = (seUlX + childLen) % parentLen;
+		swUl.second = seUlY;
 
-		} else if ((ctrUl_x <= optX) && (optX <=  width/2) && (ctrUl_y <= optY) && (optY <= height/2)) {
-			std::cout << "stitching it TWWWWWWOOOO: " << endl;
-			// SE is square
-			seChild = makeImageNoStitch(k--, im, optSplitPos);
-			swChild = stitchImgVertical(k--, im, optSplitPos);
-			neChild = stitchImgHor(k--, im, optSplitPos);
-			nwChild = stitchImgVandH(k--, im, optSplitPos);
+		pair<int,int> nwUl;
+		nwUl.first = (seUlX + childLen) % parentLen;
+		nwUl.second = (seUlY + childLen) % parentLen;
 
-		} else if (( width/2 < optX) && (optX <= ctrLr_x) && (ctrUl_y <= optY) && (optY <= height/2)) {
-			std::cout << "stitching it THREEE: " << endl;
-			// SE stitch vertically
-			// sw has full image
-			pair<int,int> indexPos(optX - (width/2) , optY);
-			seChild = stitchImgVertical(k--, im, indexPos);
-			std::cout << "stitching it seChild: " << endl;
-			swChild = makeImageNoStitch(k--, im, indexPos);
-			std::cout << "stitching it swChild: " << endl;
-			nwChild = stitchImgHor(k--, im, indexPos);
-			std::cout << "stitching it nwChild: " << endl;
-			neChild = stitchImgVandH(k--, im, indexPos);
+		pair<int,int> neUl;
+		neUl.first = seUlX;
+		neUl.second = (seUlY + childLen) % parentLen;
 
-		} else if ((ctrUl_x <= optX) && (optX <= width/2) && ( height/2 < optY) && (optY <= ctrLr_y)) {
-			// SE stitch horizontally 
-			// ne has full image
-			std::cout << "stitching it rn: " << endl;
-			pair<int,int> indexPos(optX, optY - (height/2));
-			seChild = stitchImgHor(k--, im, indexPos);
-			swChild = stitchImgVandH(k--, im, indexPos);
-			nwChild = stitchImgVertical(k--, im, indexPos);
-			neChild = makeImageNoStitch(k--, im, indexPos);
-			std::cout << "stitching done " << endl;
-
-		} else if (( width/2 < optX) && (optX <= ctrLr_x) && ( height/2 < optY) && (optY <= ctrLr_y)) {
-			std::cout << "stitching it FIVEEE: " << endl;
-			// SE stitch vertically + horizontally 
-			// nw has full image
-			pair<int,int> indexPos(optX - (width/2), optY - (height/2));
-			std::cout << "k -- " << k-- << endl;
-			seChild = stitchImgVandH(k--, im, indexPos);
-			swChild = stitchImgHor(k--, im, indexPos);
-			nwChild = makeImageNoStitch(k--, im, indexPos);
-			neChild = stitchImgVertical(k--, im, indexPos);
-
-		} else {
-			std::cout << "Something is wrong!(buildTree)" << endl;
-		}
+		// call makeNewImg helper func
+		seChild = makeNewImg(k--, im, optSplitPos);
+		swChild = makeNewImg(k--, im, swUl);
+		nwChild = makeNewImg(k--, im, nwUl);
+		neChild = makeNewImg(k--, im, neUl);
 	}
 
 	// for splitting
@@ -226,9 +184,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	Node* node = new Node(optSplitPos, k, avgPixel);
 
 	// Call Recursive func here
-	std::cout << "beforeeeeee buildTree CHILDDDDD" << endl;
 	node->NW = buildTree(nwChild, k--);
-	std::cout << "buildTree CHILDDDDD done" << endl;
 	node->NE = buildTree(neChild, k--);
 	node->SE = buildTree(seChild, k--);
 	node->SW = buildTree(swChild, k--);
@@ -318,119 +274,6 @@ int toqutree::countSize(Node * root){
 	} else {
 		return (countSize(root->NW) + countSize(root->NE) + countSize(root->SE) + countSize(root->SW));
 	}
-}
-
-PNG toqutree::makeImageNoStitch(int dim, PNG & im, pair<int,int> splitPoint){
-	unsigned int width = pow(2,dim);
-	unsigned int height = width;
-	PNG newIm(width, height);
-	for (unsigned int i = 0; i < width; i++){
-		for (unsigned int j = 0; j < height; j++){
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			* pixelNew = *im.getPixel(splitPoint.first + i, splitPoint.second + j);
-		}
-	}
-	return newIm;
-
-}
-
-// TODO: return pointer or &???
-PNG toqutree::stitchImgVertical(int dim, PNG & im, pair<int,int> splitPoint){
-	unsigned int width = pow(2,dim);
-	unsigned int height = width;
-	PNG newIm(width, height);
-	int x = splitPoint.first; // 7
-	int y = splitPoint.second; // 7
-
-	// first vertical
-	for (unsigned int i = 0; i < width - x; i++){
-		for (unsigned int j = 0; j < height; j++){
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			* pixelNew = *im.getPixel(width + x + i, y + j);
-		}
-	}
-
-	// second vertical
-	for (unsigned int i = width - x ; i < (unsigned int) x; i++){
-		for (unsigned int j = 0 ; j < height; j++){
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			* pixelNew = *im.getPixel(i, y + j);
-		}
-	}
-	return newIm;
-
-}
-
-PNG toqutree::stitchImgHor(int dim, PNG & im, pair<int,int> splitPoint){
-
-	std::cout << "stitchImgHor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-	int width = pow(2,dim);
-	int height = pow(2,dim);
-	PNG newIm(width, height);
-	int x = splitPoint.first; // 7
-	int y = splitPoint.second; // 7
-
-	// first Horizontal (bottom)
-	for (int i = 0; i < width; i++){
-		for (int j = 0; j < height - y; j++){
-			std::cout << "HORIZONTAL X " << x << "HORIZONTAL i "<< i << endl;
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			* pixelNew = *im.getPixel(x + i, y + height + j);
-		}
-	}
-
-	// second Horizontal (top)
-	for (unsigned int i = 0; i < width; i++){
-		for (unsigned int j = height - y; j <(unsigned int) y; j++){
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			pixelNew = im.getPixel(x + i, j);
-		}
-	}
-
-	return newIm;
-
-}
-
-PNG toqutree::stitchImgVandH(int dim, PNG & im, pair<int,int> splitPoint){
-	unsigned int width = pow(2,dim);
-	unsigned int height = width;
-	PNG newIm(width, height);
-	int x = splitPoint.first; // 7
-	int y = splitPoint.second; // 7
-
-	// #4 bottom right corner
-	for (unsigned int i = 0; i < (unsigned int) width - x; i++){
-		for (unsigned int j = 0; j < (unsigned int) height - y; j++){
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			* pixelNew = *im.getPixel( x + width + i, y + height + j);
-		}
-	}
-
-	// #3 bottom left corner
-	for (unsigned int i = width - x; i < (unsigned int) x; i++){
-		for (unsigned int j = 0; j < (unsigned int) height - y; j++){
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			* pixelNew = *im.getPixel(i, y + height + j);
-		}
-	}
-
-	// #2 Top right corner
-	for (unsigned int i = 0; i < (unsigned int) width - x; i++){
-		for (unsigned int j = height - y; j < (unsigned int) y; j++){
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			* pixelNew = *im.getPixel( x + width + i, j);
-		}
-	}
-
-	// #1 Top left corner
-	for (unsigned int i = width - x; i < (unsigned int) x; i++){
-		for (unsigned int j = height - y; j < (unsigned int) y; j++){
-			HSLAPixel * pixelNew = newIm.getPixel(i, j);
-			* pixelNew = *im.getPixel(i, j);
-		}
-	}
-
-	return newIm;
 }
 
 bool toqutree::isMinEntropy(double min, double avg){
@@ -768,5 +611,22 @@ bool toqutree::withinTolerance(Node * node,  double tol, HSLAPixel nodePixel){
 	&& withinTolerance(node->SE, tol, nodePixel) && withinTolerance(node->SW, tol, nodePixel));
 }
 
+
+PNG toqutree::makeNewImg(int subImgK, PNG & im, pair<int,int> ul) {
+	unsigned int width = pow(2,subImgK);
+	unsigned int height = width;
+	PNG newIm(width, height);
+
+    for (unsigned int i = 0; i < width; i++) {
+        for (unsigned int j = 0; j < height; j++) {
+			int x = (ul.first + j) % width;
+			int y = (ul.second + i) % height;
+
+            HSLAPixel* pixelNew = newIm.getPixel(i, j);
+            *pixelNew = *im.getPixel(x, y);
+        }
+    }
+    return newIm;
+}
 
 
