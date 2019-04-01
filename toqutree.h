@@ -193,6 +193,8 @@ private:
 
    int countSize(Node * root);
 
+   double getQuadEntropy(pair<int, int> quadUL, stats &s, int dim);
+
    PNG stitchImgHor(int dim, PNG &im, pair<int,int> splitPoint);
 
    PNG stitchImgVertical(int dim, PNG &im, pair<int,int> splitPoint);
