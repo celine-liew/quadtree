@@ -71,7 +71,7 @@ int toqutree::size() {
 
 toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	// k is big sub-image
-	std::cout << "entered BuildTree" << endl;
+	std::cout << "entered BuildTree when k is" << k << endl;
 	stats s(im);
 	int width = im.width();
 	int height = im.height();
@@ -81,7 +81,12 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	pair<int,int> optSplitPos;
 	// Base cases
 	if (k == 0){
+		std::cout << "BuildTree when k = 0" << endl;
 		Node* node = new Node(ul, k, avgPixel);
+		node->SE = NULL;
+		node->SW = NULL;
+		node->NE = NULL;
+		node->NW = NULL;
 		return node;
 	}
 
@@ -89,9 +94,9 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	PNG seChild(width/2, height/2);
 	PNG swChild(width/2, height/2);
 	PNG neChild(width/2, height/2);
-	std::cout << "BuildTree before if k = 1" << endl;
+	// std::cout << "BuildTree before if k = 1" << endl;
 	if (k == 1){
-
+		std::cout << "BuildTree when k = 1 finally !!" << endl;
 		HSLAPixel * pixelNewNW = nwChild.getPixel(0, 0);
 		pixelNewNW = im.getPixel(0,0);
 
@@ -108,7 +113,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 
 	
 	else {
-		std::cout << "build tree - check else" << endl;
+		// std::cout << "build tree - check else" << endl;
 		// find centre
 		unsigned int ctrUl_x = width/4; //4
 		unsigned int ctrUl_y = height/4; // 4
@@ -129,10 +134,10 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		// we use this var when we made child nodes: 1-TOPLEFT 2-TOPRIGHT 3-BOTTOMLEFT 4-BOTTOMRIGHT
 		int whichQ = 0;
 
-		std::cout << "build tree - QTOPLEFT" << endl;
-		std::cout << "start x " << ctrUl_x << endl;
-		std::cout << "start y " << ctrUl_y << endl;
-		std::cout << "end x: " << ctrUl_x + width/2 << endl;
+		// std::cout << "build tree - round" << endl;
+		// std::cout << "start x " << ctrUl_x << endl;
+		// std::cout << "start y " << ctrUl_y << endl;
+		// std::cout << "end x: " << ctrUl_x + width/2 << endl;
 
 		for (int x = ctrUl_x; x < ctrUl_x + width/2; x++) {
 			for (int y = ctrUl_y; y < ctrUl_y + height/2; y ++) {
@@ -154,11 +159,13 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			// std::cout << "avgEntropy: " << avgEntropy << endl;
 			// std::cout << "minEnt: " << minEnt << endl;
 			}
-			std::cout << "finished one set of x: " << x << endl;
+			// std::cout << "finished one set of x: " << x << endl;
 		}
 			
 		// after 4 for loops - make child image (5 cases based on the splitPoint)
 
+		std::cout << "opt split x " << optSplitPos.first << endl;
+		std::cout << "opt split y " << optSplitPos.second << endl;
 		unsigned int seUlX = optSplitPos.first;
 		unsigned int seUlY = optSplitPos.second;
 		int parentLen = (int) pow(2, k);
@@ -177,10 +184,11 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		neUl.second = (seUlY + childLen) % parentLen;
 
 		// call makeNewImg helper func
-		seChild = makeNewImg(k--, im, optSplitPos);
-		swChild = makeNewImg(k--, im, swUl);
-		nwChild = makeNewImg(k--, im, nwUl);
-		neChild = makeNewImg(k--, im, neUl);
+		k = k - 1;
+		seChild = makeNewImg(k, im, optSplitPos);
+		swChild = makeNewImg(k, im, swUl);
+		nwChild = makeNewImg(k, im, nwUl);
+		neChild = makeNewImg(k, im, neUl);
 	}
 
 	// for splitting

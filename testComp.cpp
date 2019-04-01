@@ -61,14 +61,14 @@ TEST_CASE("stats::basic getAvg 2","[weight=1][part=stats]"){
     pair<int,int> ul(1,1);
     pair<int,int> lr(2,2);
     HSLAPixel result = s.getAvg(ul,lr);
-    std::cout << "size 3,3: " << result << endl;
+    // std::cout << "size 3,3: " << result << endl;
     HSLAPixel expected(157.5,1.0, 0.5);
 
     REQUIRE(result == expected);
 }
 
 TEST_CASE("stats::basic entropy","[weight=1][part=stats]"){
-    std::cout << "basic entropy" << endl;
+    // std::cout << "basic entropy" << endl;
     PNG data; data.resize(2,2);
     for (int i = 0; i < 2; i ++){
         for (int j = 0; j < 2; j++){
