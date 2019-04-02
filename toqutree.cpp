@@ -73,11 +73,7 @@ int toqutree::size() {
 toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	// std::cout << "our original dim is " << k << endl;
 	// k is big sub-image
-<<<<<<< HEAD
-	std::cout << "entered BuildTree! k: " <<  k << endl;
-=======
 	// std::cout << "entered BuildTree when k is" << k << endl;
->>>>>>> 9601b46fc6ea48fbcb82ba5fd0e7b1e6b6c194ee
 	stats s(im);
 	int width = im.width();
 	// std::cout << "entered BuildTree when width is" << width << endl;
@@ -117,6 +113,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		
 		HSLAPixel * pixelNewNe = neChild.getPixel(0, 0);
 		pixelNewNe = im.getPixel(1,0);
+
 
 	}
 
@@ -275,15 +272,11 @@ toqutree::Node * toqutree::copy(const Node * other) {
         return NULL;
     }
 	Node * newNode = new Node(other->center, other->dimension, other->avg);
-
-	if (other->NW != NULL)
-	{
-		newNode->NW = copy(other->NW);
-		newNode->NE = copy(other->NE);
-		newNode->SE = copy(other->SE);
-		newNode->SW = copy(other->SW);
-	}
-	 return newNode;
+	newNode->NW = copy(other->NW);
+	newNode->NE = copy(other->NE);
+	newNode->SE = copy(other->SE);
+	newNode->SW = copy(other->SW);
+	return newNode;
 /* your code here */
 }
 
@@ -374,9 +367,9 @@ bool toqutree::isMinEntropy(double min, double avg){
 PNG toqutree::renderHelper(PNG & resultImg, Node * root, int dim){
 	std::cout << "start the render helper " << endl;
 	std::cout << "dim is " << dim << endl;
-	unsigned int squareLen = pow(2, dim);
+	int squareLen = pow(2, dim);
 	std::cout << "squareLen " << squareLen << endl;
-	unsigned int nodeSquareLen = pow(2, dim -1);
+	int nodeSquareLen = pow(2, dim -1);
 	std::cout << "nodeSquareLen " << nodeSquareLen << endl;
 	for(int i = 0; i < squareLen; i++) {
 		for(int j =0; j < squareLen; j++) {

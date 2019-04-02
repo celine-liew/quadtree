@@ -15,30 +15,30 @@ stats::stats(PNG &im)
             HSLAPixel *pixel = im.getPixel(x, y);
             if (x == 0 && y == 0)
             {
-                sumHueX[x][y] = (pixel->s) * cos(PI * pixel->h / 180);
-                sumHueY[x][y] = 1 * sin(PI * pixel->h / 180);
+                sumHueX[x][y] = cos(PI * pixel->h / 180.0);
+                sumHueY[x][y] = sin(PI * pixel->h / 180.0);
                 sumSat[x][y] = pixel->s;
                 sumLum[x][y] = pixel->l;
 
             }
             if (x != 0 && y == 0)
             {
-                sumHueX[x][y] = sumHueX[x - 1][y] + (pixel->s) * cos(PI * pixel->h / 180);
-                sumHueY[x][y] = sumHueY[x - 1][y] + 1 * sin(PI * pixel->h / 180);
+                sumHueX[x][y] = sumHueX[x - 1][y] + cos(PI * pixel->h / 180.0);
+                sumHueY[x][y] = sumHueY[x - 1][y] + sin(PI * pixel->h / 180.0);
                 sumSat[x][y] = sumSat[x - 1][y] + pixel->s;
                 sumLum[x][y] = sumLum[x - 1][y] + pixel->l;
             }
             if (y != 0 && x == 0)
             {
-                sumHueX[x][y] = sumHueX[x][y - 1] + (pixel->s) * cos(PI * pixel->h / 180);
-                sumHueY[x][y] = sumHueY[x][y - 1] + 1 * sin(PI * pixel->h / 180);
+                sumHueX[x][y] = sumHueX[x][y - 1] + cos(PI * pixel->h / 180.0);
+                sumHueY[x][y] = sumHueY[x][y - 1] + sin(PI * pixel->h / 180.0);
                 sumSat[x][y] = sumSat[x][y - 1] + pixel->s;
                 sumLum[x][y] = sumLum[x][y - 1] + pixel->l;
             }
             if (x != 0 && y != 0)
             {
-                sumHueX[x][y] = sumHueX[x - 1][y] + sumHueX[x][y - 1] - sumHueX[x - 1][y - 1] + (pixel->s) * cos(PI * pixel->h / 180);
-                sumHueY[x][y] = sumHueY[x - 1][y] + sumHueY[x][y - 1] - sumHueY[x - 1][y - 1] + 1 * sin(PI * pixel->h / 180);
+                sumHueX[x][y] = sumHueX[x - 1][y] + sumHueX[x][y - 1] - sumHueX[x - 1][y - 1] + cos(PI * pixel->h / 180.0);
+                sumHueY[x][y] = sumHueY[x - 1][y] + sumHueY[x][y - 1] - sumHueY[x - 1][y - 1] + sin(PI * pixel->h / 180.0);
                 sumSat[x][y] = sumSat[x - 1][y] - sumSat[x - 1][y - 1] + sumSat[x][y - 1] + pixel->s;
                 sumLum[x][y] = sumLum[x - 1][y] + sumLum[x][y - 1] - sumLum[x - 1][y - 1] + pixel->l;
             }
@@ -87,52 +87,103 @@ HSLAPixel stats::getAvg(pair<int, int> ul, pair<int, int> lr)
     int lr_x = lr.first;
     int lr_y = lr.second;
     double area = rectArea(ul, lr);
-    std::cout << "areaa " << area << endl;
-    double avgHueX;
-    double avgHueY;
+    // std::cout << "areaa " << area << endl;
+    double totalHueX;
+    double totalHueY;
 
     HSLAPixel pixel;
+    if (ul_x == lr_x && ul_y == lr_y) area = 1;
     if (ul_x == 0 && ul_y == 0)
     {
-        avgHueX = (sumHueX[lr_x][lr_y] / area);
-        avgHueY = (sumHueY[lr_x][lr_y] / area);
+        totalHueX = (sumHueX[lr_x][lr_y]);
+        totalHueY = (sumHueY[lr_x][lr_y]);
         pixel.s = (sumSat[lr_x][lr_y]) / area;
         pixel.l = (sumLum[lr_x][lr_y] / area);
-<<<<<<< HEAD
-        std::cout << "avghuesX " << avgHueX << " avgHueY " << avgHueY << endl;
-=======
         //std::cout << sumLum[lr_x][lr_y] << endl;
->>>>>>> 9601b46fc6ea48fbcb82ba5fd0e7b1e6b6c194ee
     }
     if (ul_x > 0 && ul_y > 0)
     {   
-        avgHueX = ((sumHueX[lr_x][lr_y] - sumHueX[ul_x - 1][lr_y] - sumHueX[lr_x][ul_y - 1] + sumHueX[ul_x - 1][ul_y - 1]) / area);
-        avgHueY = ((sumHueY[lr_x][lr_y] - sumHueY[ul_x - 1][lr_y] - sumHueY[lr_x][ul_y - 1] + sumHueY[ul_x - 1][ul_y - 1]) / area);
+        totalHueX = (sumHueX[lr_x][lr_y] - sumHueX[ul_x - 1][lr_y] - sumHueX[lr_x][ul_y - 1] + sumHueX[ul_x - 1][ul_y - 1]);
+        totalHueY = (sumHueY[lr_x][lr_y] - sumHueY[ul_x - 1][lr_y] - sumHueY[lr_x][ul_y - 1] + sumHueY[ul_x - 1][ul_y - 1]);
         pixel.s = ((sumSat[lr_x][lr_y] - sumSat[ul_x - 1][lr_y] - sumSat[lr_x][ul_y - 1] + sumSat[ul_x - 1][ul_y - 1]) / area);
         pixel.l = ((sumLum[lr_x][lr_y] - sumLum[ul_x - 1][lr_y] - sumLum[lr_x][ul_y - 1] + sumLum[ul_x - 1][ul_y - 1]) / area);
         // std::cout <<  sumLum[lr_x][lr_y] << "and" << sumLum[ul_x][lr_y]<< "and" << sumLum[lr_x][ul_y-1] << endl;
     }
     else if(ul_x == 0 && ul_y !=0) {
-        avgHueX = ((sumHueX[lr_x][lr_y] - sumHueX[lr_x][ul_y -1]) / area);
-        avgHueY = ((sumHueY[lr_x][lr_y] - sumHueY[lr_x][ul_y -1]) / area);
+        totalHueX = sumHueX[lr_x][lr_y] - sumHueX[lr_x][ul_y -1];
+        totalHueY = sumHueY[lr_x][lr_y] - sumHueY[lr_x][ul_y -1];
         pixel.s = ((sumSat[lr_x][lr_y] - sumSat[lr_x][ul_y -1]) / area);
         pixel.l = ((sumLum[lr_x][lr_y] - sumLum[lr_x][ul_y -1]) / area);
     }
     else if(ul_x != 0 && ul_y ==0) {
-        avgHueX = ((sumHueX[lr_x][lr_y] - sumHueX[ul_x -1][lr_y]) / area);
-        avgHueY = ((sumHueY[lr_x][lr_y] - sumHueY[ul_x -1][lr_y]) / area);
+        totalHueX = sumHueX[lr_x][lr_y] - sumHueX[ul_x -1][lr_y];
+        totalHueY = sumHueY[lr_x][lr_y] - sumHueY[ul_x -1][lr_y];
         pixel.s = ((sumSat[lr_x][lr_y] - sumSat[ul_x -1][lr_y]) / area);
         pixel.l = ((sumLum[lr_x][lr_y] - sumLum[ul_x -1][lr_y]) / area);
     }
     pixel.a = 1.0;
-    pixel.h = (atan2(avgHueY, avgHueX) * 180 / PI);
-    if (pixel.h < 0)
+    double avgH;
+    avgH = atan2(totalHueY, totalHueX) * (180.0 / PI);
+    if (avgH < 0)
     {
-        pixel.h += 360;
+        avgH += 360;
     }
-    std::cout << "avgHue " << pixel.h  << endl;
+    avgH = fmod(avgH, 360.0);
+    // std::cout << "avgHue " << pixel.h  << endl;
+    pixel.h = avgH;
     return pixel;
 }
+
+// HSLAPixel stats::getAvg(pair<int, int> ul, pair<int, int> lr)
+// {
+//     int ul_x = ul.first;
+//     int ul_y = ul.second;
+//     int lr_x = lr.first;
+//     int lr_y = lr.second;
+//     double area = rectArea(ul, lr);
+//     // std::cout << "areaa " << area << endl;
+//     double avgHueX;
+//     double avgHueY;
+
+//     HSLAPixel pixel;
+//     if (ul_x == lr_x && ul_y == lr_y) area = 1;
+//     if (ul_x == 0 && ul_y == 0)
+//     {
+//         avgHueX = (sumHueX[lr_x][lr_y] / area);
+//         avgHueY = (sumHueY[lr_x][lr_y] / area);
+//         pixel.s = (sumSat[lr_x][lr_y]) / area;
+//         pixel.l = (sumLum[lr_x][lr_y] / area);
+//         //std::cout << sumLum[lr_x][lr_y] << endl;
+//     }
+//     if (ul_x > 0 && ul_y > 0)
+//     {   
+//         avgHueX = ((sumHueX[lr_x][lr_y] - sumHueX[ul_x - 1][lr_y] - sumHueX[lr_x][ul_y - 1] + sumHueX[ul_x - 1][ul_y - 1]) / area);
+//         avgHueY = ((sumHueY[lr_x][lr_y] - sumHueY[ul_x - 1][lr_y] - sumHueY[lr_x][ul_y - 1] + sumHueY[ul_x - 1][ul_y - 1]) / area);
+//         pixel.s = ((sumSat[lr_x][lr_y] - sumSat[ul_x - 1][lr_y] - sumSat[lr_x][ul_y - 1] + sumSat[ul_x - 1][ul_y - 1]) / area);
+//         pixel.l = ((sumLum[lr_x][lr_y] - sumLum[ul_x - 1][lr_y] - sumLum[lr_x][ul_y - 1] + sumLum[ul_x - 1][ul_y - 1]) / area);
+//         // std::cout <<  sumLum[lr_x][lr_y] << "and" << sumLum[ul_x][lr_y]<< "and" << sumLum[lr_x][ul_y-1] << endl;
+//     }
+//     else if(ul_x == 0 && ul_y !=0) {
+//         avgHueX = ((sumHueX[lr_x][lr_y] - sumHueX[lr_x][ul_y -1]) / area);
+//         avgHueY = ((sumHueY[lr_x][lr_y] - sumHueY[lr_x][ul_y -1]) / area);
+//         pixel.s = ((sumSat[lr_x][lr_y] - sumSat[lr_x][ul_y -1]) / area);
+//         pixel.l = ((sumLum[lr_x][lr_y] - sumLum[lr_x][ul_y -1]) / area);
+//     }
+//     else if(ul_x != 0 && ul_y ==0) {
+//         avgHueX = ((sumHueX[lr_x][lr_y] - sumHueX[ul_x -1][lr_y]) / area);
+//         avgHueY = ((sumHueY[lr_x][lr_y] - sumHueY[ul_x -1][lr_y]) / area);
+//         pixel.s = ((sumSat[lr_x][lr_y] - sumSat[ul_x -1][lr_y]) / area);
+//         pixel.l = ((sumLum[lr_x][lr_y] - sumLum[ul_x -1][lr_y]) / area);
+//     }
+//     pixel.a = 1.0;
+//     pixel.h = (atan2(avgHueY, avgHueX) * 180 / PI);
+//     if (pixel.h < 0)
+//     {
+//         pixel.h += 360;
+//     }
+//     std::cout << "avgHue " << pixel.h  << endl;
+//     return pixel;
+// }
 
 vector<int> stats::buildHist(pair<int, int> ul, pair<int, int> lr)
 {
