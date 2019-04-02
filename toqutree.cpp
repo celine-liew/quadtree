@@ -107,14 +107,13 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 		// std::cout << "getpixel original img !!" << endl;
 
 		HSLAPixel * pixelNewSe = seChild.getPixel(0, 0);
-		pixelNewSe = im.getPixel(1,1);
+		*pixelNewSe = *im.getPixel(1,1);
 
 		HSLAPixel * pixelNewSw = swChild.getPixel(0, 0);
-		pixelNewSw = im.getPixel(0,1);
+		*pixelNewSw = *im.getPixel(0,1);
 		
 		HSLAPixel * pixelNewNe = neChild.getPixel(0, 0);
-		pixelNewNe = im.getPixel(1,0);
-
+		*pixelNewNe = *im.getPixel(1,0);
 
 	}
 
@@ -392,26 +391,6 @@ HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
 		return root->avg;
 	}
 	else {
-		// TODO! 
-
-		// unsigned int seUlX = optSplitPos.first;
-		// unsigned int seUlY = optSplitPos.second;
-		// int parentLen = (int) pow(2, k);
-		// int childLen = (int) pow(2, k - 1);
-
-		// pair<int,int> swUl;
-		// swUl.first  = (seUlX + childLen) % parentLen;
-		// swUl.second = seUlY;
-
-		// pair<int,int> nwUl;
-		// nwUl.first = (seUlX + childLen) % parentLen;
-		// nwUl.second = (seUlY + childLen) % parentLen;
-
-		// pair<int,int> neUl;
-		// neUl.first = seUlX;
-		// neUl.second = (seUlY + childLen) % parentLen;
-
-
 		pair<int, int> splitPos = root->center; 
 
 		unsigned int seUlX = splitPos.first;
