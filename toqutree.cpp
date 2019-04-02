@@ -84,9 +84,9 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	pair<int,int> optSplitPos;
 	// Base cases
 	if (k == 0){
-		std::cout << "BuildTree when k = 0" << endl;
+		// std::cout << "BuildTree when k = 0" << endl;
 		Node* node = new Node(ul, k, avgPixel);
-		std::cout << node->avg << endl;
+		// std::cout << node->avg << endl;
 		node->SE = NULL;
 		node->SW = NULL;
 		node->NE = NULL;
@@ -204,6 +204,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	
 	Node* node = new Node(optSplitPos, k, avgPixel);
 	// Call Recursive func here
+	std::cout << "what is optSplitPos ? " << optSplitPos.first << "y: " << optSplitPos.second  << endl;
 	int nextdim = k -1;
 	node->NW = buildTree(nwChild, nextdim);
 	node->NE = buildTree(neChild, nextdim);
@@ -377,6 +378,7 @@ PNG toqutree::renderHelper(PNG & resultImg, Node * croot, int dim){
 	// std::cout << "nodeSquareLen " << nodeSquareLen << endl;
 	for(int i = 0; i < squareLen; i++) {
 		for(int j =0; j < squareLen; j++) {
+			std::cout << "i is "<< i << "j " << j << endl;
 			// HSLAPixel* pixelNew = resultImg.getPixel(i, j);
 			*(resultImg.getPixel(i, j)) = findPixel(root, dim, i, j);
 		}
@@ -385,10 +387,10 @@ PNG toqutree::renderHelper(PNG & resultImg, Node * croot, int dim){
 	return resultImg;
 }
 
-HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
-	if(root->NE == NULL) {
-		std::cout << root->avg << endl;
-		return root->avg;
+HSLAPixel toqutree::findPixel(Node* croot, int dim, int x, int y) {
+	if(croot->NE == NULL) {
+		std::cout << croot->avg << endl;
+		return croot->avg;
 	}
 	else {
 		pair<int, int> splitPos = root->center; 
@@ -405,7 +407,12 @@ HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
 			if (splitPos.second <= y) y = y - splitPos.second;
 			// todo
 			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) y = (squareLen - splitPos.second + y + 1);
-			return findPixel(root->SE, dim -1, x, y);
+			std::cout << "croot->SE "<< (croot->SE)->avg << endl;
+			if (y < 0){
+				std::cout << "LINE 411 y wrong!!! " << y << endl;
+			}
+			
+			return findPixel(croot->SE, dim -1, x, y);
 		}
 		else if ((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
 		&& (y < splitPos.second || (splitPos.second + nodeSquareLen -1) % squareLen < y)) {
@@ -416,7 +423,11 @@ HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
 			if (x <= (splitPos.first + nodeSquareLen -1) % squareLen) x = (squareLen - splitPos.first + x + 1);
 			if (y < splitPos.second) y = (squareLen + y - seUlY) % squareLen;
 			if ((splitPos.second + nodeSquareLen -1) % squareLen < y) y = y - seUlY;
-			return findPixel(root->NE, dim -1, x, y);
+			std::cout << "croot->NE "<< (croot->NE)->avg << endl;
+			if (y < 0){
+				std::cout << "LINE 427 y wrong!!! " << y << endl;
+			}
+			return findPixel(croot->NE, dim -1, x, y);
 		}
 		else if ((x < splitPos.first || (splitPos.first + nodeSquareLen -1) % squareLen < x)
 		&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
@@ -426,8 +437,19 @@ HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
 			if (x < splitPos.first) x = (squareLen - swUl.first + x);
 			if ((splitPos.first + nodeSquareLen -1) % squareLen < x) x = x - swUl.first;
 			if (splitPos.second <= y) y = y - splitPos.second;
-			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) y = (squareLen - splitPos.second + y + 1);
-			return findPixel(root->SW, dim -1, x, y);
+			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) {
+				std::cout << "what is y? "<< y << endl;
+				std::cout << "what is splitpoint second? "<< splitPos.second  << endl;
+				std::cout << "what is squareLen ? "<< squareLen  << endl;
+				y = (squareLen - splitPos.second + y + 1);
+				std::cout << "what is y nowwww? "<< y << endl;
+			}
+			std::cout << "croot->SW "<< (croot->SW)->avg << endl;
+			// std::cout << "x & y "<< x << "y: " << y << endl;
+			if (y < 0){
+				std::cout << "LINE 444 y wrong!!! " << y << endl;
+			}
+			return findPixel(croot->SW, dim -1, x, y);
 		}
 		else {
 			pair<int,int> nwUl;
@@ -437,7 +459,12 @@ HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
 			if ((splitPos.first + nodeSquareLen -1) % squareLen < x) x = x - nwUl.first;
 			if (y < splitPos.second) y = (squareLen + y - nwUl.second) % squareLen;
 			if ((splitPos.second + nodeSquareLen -1) % squareLen < y) y = y - nwUl.second;
-			return findPixel(root->NW,dim -1, x, y);
+			std::cout << "croot->NW "<< (croot->NW)->avg << endl;
+			// std::cout << "x & y "<< x << y << endl;
+			if (y < 0){
+				std::cout << "LINE 458 y wrong!!! " << y << endl;
+			}
+			return findPixel(croot->NW,dim -1, x, y);
 		}
 	}
 }
