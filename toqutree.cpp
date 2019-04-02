@@ -201,7 +201,8 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	// for splitting
 	// TODO: have to get optSplitPos first 
 	// Make 4 PNG im for each child
-
+	// std::cout << "our avgPixel is " << avgPixel << endl;
+	
 	Node* node = new Node(optSplitPos, k, avgPixel);
 	// Call Recursive func here
 	int nextdim = k -1;
@@ -229,7 +230,8 @@ PNG toqutree::render(){
 	int squareLen = pow(2, root->dimension);
 	PNG resultImg(squareLen, squareLen);
 	std::cout << "call reder Helper now! " << endl;
-	// std::cout << "our root dim is "<< root->dimension << endl;
+	std::cout << "our root avg is "<< root->avg << endl;
+
 	resultImg = renderHelper(resultImg, root, root->dimension);
 // My algorithm for this problem included a helper function
 // that was analogous to Find in a BST, but it navigated the 
@@ -363,9 +365,13 @@ bool toqutree::isMinEntropy(double min, double avg){
 	return false;
 }
 
-PNG toqutree::renderHelper(PNG & resultImg, Node * root, int dim){
+PNG toqutree::renderHelper(PNG & resultImg, Node * croot, int dim){
 	std::cout << "start the render helper " << endl;
 	std::cout << "root avg is " << root->avg << endl;
+	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>> " << endl;
+	// std::cout << "dim is " << dim << endl;
+	std::cout << "our croot avg is "<< croot->avg << endl;
+
 	int squareLen = pow(2, dim);
 	// std::cout << "squareLen " << squareLen << endl;
 	int nodeSquareLen = pow(2, dim -1);
