@@ -19,6 +19,7 @@ stats::stats(PNG &im)
                 sumHueY[x][y] = 1 * sin(PI * pixel->h / 180);
                 sumSat[x][y] = pixel->s;
                 sumLum[x][y] = pixel->l;
+
             }
             if (x != 0 && y == 0)
             {
@@ -86,6 +87,7 @@ HSLAPixel stats::getAvg(pair<int, int> ul, pair<int, int> lr)
     int lr_x = lr.first;
     int lr_y = lr.second;
     double area = rectArea(ul, lr);
+    std::cout << "areaa " << area << endl;
     double avgHueX;
     double avgHueY;
 
@@ -96,7 +98,7 @@ HSLAPixel stats::getAvg(pair<int, int> ul, pair<int, int> lr)
         avgHueY = (sumHueY[lr_x][lr_y] / area);
         pixel.s = (sumSat[lr_x][lr_y]) / area;
         pixel.l = (sumLum[lr_x][lr_y] / area);
-        std::cout << sumLum[lr_x][lr_y] << endl;
+        std::cout << "avghuesX " << avgHueX << " avgHueY " << avgHueY << endl;
     }
     if (ul_x > 0 && ul_y > 0)
     {   
@@ -119,11 +121,12 @@ HSLAPixel stats::getAvg(pair<int, int> ul, pair<int, int> lr)
         pixel.l = ((sumLum[lr_x][lr_y] - sumLum[ul_x -1][lr_y]) / area);
     }
     pixel.a = 1.0;
-    pixel.h = atan2(avgHueY, avgHueX) * 180 / PI;
+    pixel.h = (atan2(avgHueY, avgHueX) * 180 / PI);
     if (pixel.h < 0)
     {
-        pixel.h += 180;
+        pixel.h += 360;
     }
+    std::cout << "avgHue " << pixel.h  << endl;
     return pixel;
 }
 

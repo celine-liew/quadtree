@@ -51,18 +51,81 @@ TEST_CASE("stats::basic getAvg 2","[weight=1][part=stats]"){
     for (int i = 0; i < 3; i ++){
         for (int j = 0; j < 3; j++){
             HSLAPixel * p = data.getPixel(i,j);
-            p->h = 135*j + i * 90;
-            p->s = 1.0;
-            p->l = 0.5;
+            p->h = 50*j + i * 90;
+            p->s = 0.5;
+            p->l = 0.4;
+            p->a = 1.0;
+        }
+    }
+    stats s(data);
+    pair<int,int> ul(0,1);
+    pair<int,int> lr(0,1);
+    HSLAPixel result = s.getAvg(ul,lr);
+    std::cout << "size 0,1 0,1: " << result << endl;
+    HSLAPixel expected(230,0.5, 0.4);
+
+    REQUIRE(result == expected);
+}
+
+TEST_CASE("stats::basic getAvg 3","[weight=1][part=stats]"){
+    PNG data; data.resize(3,3);
+    for (int i = 0; i < 3; i ++){
+        for (int j = 0; j < 3; j++){
+            HSLAPixel * p = data.getPixel(i,j);
+            p->h = 90*j + i * 50;
+            p->s = 0.5;
+            p->l = 0.4;
+            p->a = 1.0;
+        }
+    }
+    stats s(data);
+    pair<int,int> ul(1,0);
+    pair<int,int> lr(1,0);
+    HSLAPixel result = s.getAvg(ul,lr);
+    std::cout << "size 1,0 1,0: " << result << endl;
+    HSLAPixel expected(230,0.5, 0.4);
+
+    REQUIRE(result == expected);
+}
+
+TEST_CASE("stats::basic getAvg 4","[weight=1][part=stats]"){
+    PNG data; data.resize(3,3);
+    for (int i = 0; i < 3; i ++){
+        for (int j = 0; j < 3; j++){
+            HSLAPixel * p = data.getPixel(i,j);
+            p->h = 40.242 *j + i * 100;
+            p->s = 0.75;
+            p->l = 0.45;
+            p->a = 1.0;
+        }
+    }
+    stats s(data);
+    pair<int,int> ul(0,0);
+    pair<int,int> lr(0,1);
+    HSLAPixel result = s.getAvg(ul,lr);
+    std::cout << "size 0,0 0,1: " << result << endl;
+    HSLAPixel expected(50,0.75, 0.45);
+
+    REQUIRE(result == expected);
+}
+
+TEST_CASE("stats::basic getAvg 5","[weight=1][part=stats]"){
+    PNG data; data.resize(4,4);
+    for (int i = 0; i < 4; i ++){
+        for (int j = 0; j < 4; j++){
+            HSLAPixel * p = data.getPixel(i,j);
+            p->h = 7 *j + i * 4;
+            p->s = 0.625;
+            p->l =  0.5;
             p->a = 1.0;
         }
     }
     stats s(data);
     pair<int,int> ul(1,1);
-    pair<int,int> lr(2,2);
+    pair<int,int> lr(2,3);
     HSLAPixel result = s.getAvg(ul,lr);
-    std::cout << "size 3,3: " << result << endl;
-    HSLAPixel expected(157.5,1.0, 0.5);
+    std::cout << "size 1,0: " << result << endl;
+    HSLAPixel expected(200,0.625, 0.5);
 
     REQUIRE(result == expected);
 }

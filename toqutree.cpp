@@ -71,7 +71,7 @@ int toqutree::size() {
 
 toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	// k is big sub-image
-	std::cout << "entered BuildTree" << endl;
+	std::cout << "entered BuildTree! k: " <<  k << endl;
 	stats s(im);
 	int width = im.width();
 	int height = im.height();
@@ -154,7 +154,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 			// std::cout << "avgEntropy: " << avgEntropy << endl;
 			// std::cout << "minEnt: " << minEnt << endl;
 			}
-			std::cout << "finished one set of x: " << x << endl;
+			// std::cout << "finished one set of x: " << x << endl;
 		}
 			
 		// after 4 for loops - make child image (5 cases based on the splitPoint)
