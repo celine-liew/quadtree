@@ -231,7 +231,8 @@ PNG toqutree::render(){
 	unsigned int squareLen = pow(2, root->dimension);
 	PNG resultImg(squareLen, squareLen);
 	std::cout << "call reder Helper now! " << endl;
-	// std::cout << "our root dim is "<< root->dimension << endl;
+	std::cout << "our root avg is "<< root->avg << endl;
+
 	resultImg = renderHelper(resultImg, root, root->dimension);
 // My algorithm for this problem included a helper function
 // that was analogous to Find in a BST, but it navigated the 
@@ -365,9 +366,12 @@ bool toqutree::isMinEntropy(double min, double avg){
 	return false;
 }
 
-PNG toqutree::renderHelper(PNG & resultImg, Node * root, int dim){
+PNG toqutree::renderHelper(PNG & resultImg, Node * croot, int dim){
 	std::cout << "start the render helper " << endl;
-	std::cout << "dim is " << dim << endl;
+	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>> " << endl;
+	// std::cout << "dim is " << dim << endl;
+	std::cout << "our croot avg is "<< croot->avg << endl;
+
 	int squareLen = pow(2, dim);
 	std::cout << "squareLen " << squareLen << endl;
 	int nodeSquareLen = pow(2, dim -1);
@@ -375,36 +379,36 @@ PNG toqutree::renderHelper(PNG & resultImg, Node * root, int dim){
 	for(int i = 0; i < squareLen; i++) {
 		for(int j =0; j < squareLen; j++) {
 			HSLAPixel* pixelNew = resultImg.getPixel(i, j);
-			*pixelNew = findPixel(root, dim, i, j);
+			*pixelNew = findPixel(croot, dim, i, j);
 		}
 	}
 	std::cout << "finish renderHelper " << endl;
 	return resultImg;
 }
 
-HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
-	if(root->NE == NULL) {
+HSLAPixel toqutree::findPixel(Node* croot, int dim, int x, int y) {
+	if(croot->NE == NULL) {
 		// std::cout << "I reached the final pixel leave " << root->avg << endl;
-		return root->avg;
+		return croot->avg;
 	}
 	else {
-		pair<int, int> splitPos = root->center; 
+		pair<int, int> splitPos = croot->center; 
 		unsigned int squareLen = pow(2, dim);
 		unsigned int nodeSquareLen = pow(2, dim -1);
 		if((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
 			&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-			return findPixel(root->SE, dim -1, x, y);
+			return findPixel(croot->SE, dim -1, x, y);
 		}
 		else if ((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
 		&& (y < splitPos.second || (splitPos.second + nodeSquareLen -1) % squareLen < y)) {
-			return findPixel(root->NE, dim -1, x, y);
+			return findPixel(croot->NE, dim -1, x, y);
 		}
 		else if ((x < splitPos.first || (splitPos.first + nodeSquareLen -1) % squareLen < x)
 		&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-			return findPixel(root->SW, dim -1, x, y);
+			return findPixel(croot->SW, dim -1, x, y);
 		}
 		else {
-			return findPixel(root->NW,dim -1, x, y);
+			return findPixel(croot->NW,dim -1, x, y);
 		}
 	}
 }
