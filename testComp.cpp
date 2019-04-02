@@ -124,14 +124,19 @@ TEST_CASE("stats::basic getAvg 5","[weight=1][part=stats]"){
     pair<int,int> ul(1,1);
     pair<int,int> lr(2,3);
     HSLAPixel result = s.getAvg(ul,lr);
+<<<<<<< HEAD
     std::cout << "size 1,0: " << result << endl;
     HSLAPixel expected(200,0.625, 0.5);
+=======
+    // std::cout << "size 3,3: " << result << endl;
+    HSLAPixel expected(157.5,1.0, 0.5);
+>>>>>>> 9601b46fc6ea48fbcb82ba5fd0e7b1e6b6c194ee
 
     REQUIRE(result == expected);
 }
 
 TEST_CASE("stats::basic entropy","[weight=1][part=stats]"){
-    std::cout << "basic entropy" << endl;
+    // std::cout << "basic entropy" << endl;
     PNG data; data.resize(2,2);
     for (int i = 0; i < 2; i ++){
         for (int j = 0; j < 2; j++){
@@ -150,17 +155,17 @@ TEST_CASE("stats::basic entropy","[weight=1][part=stats]"){
     REQUIRE(result == 2);
 }
 
-// TEST_CASE("toqutree::basic ctor render","[weight=1][part=toqutree]"){
-//     PNG img;
-//     img.readFromFile("images/stanleySquare.png");
+TEST_CASE("toqutree::basic ctor render","[weight=1][part=toqutree]"){
+    PNG img;
+    img.readFromFile("images/stanleySquare.png");
 
-//     toqutree t1(img,9);
+    toqutree t1(img,9);
+    // std::cout << "built the tree, now render it! " << endl;
+    PNG out = t1.render();
+    out.convert();
 
-//     PNG out = t1.render();
-//     out.convert();
-
-//     REQUIRE(out==img);
-// }
+    REQUIRE(out==img);
+}
 
 // TEST_CASE("toqutree::basic copy","[weight=1][part=toqutree]"){
 //     PNG img;
@@ -174,24 +179,20 @@ TEST_CASE("stats::basic entropy","[weight=1][part=stats]"){
 //     REQUIRE(out==img);
 // }
 
-TEST_CASE("toqutree::basic prune","[weight=1][part=toqutree]"){
-    std::cout << "basic prune" << endl;
-    PNG img;
-    img.readFromFile("images/ada.png");
+// TEST_CASE("toqutree::basic prune","[weight=1][part=toqutree]"){
+//     std::cout << "basic prune" << endl;
+//     PNG img;
+//     img.readFromFile("images/ada.png");
     
-    toqutree t1(img,9);
-    std::cout << "after toque" << endl;
-    std::cout << "after toque" << endl;
-    std::cout << "after toque" << endl;
-    std::cout << "after toque" << endl;
+//     toqutree t1(img,9);
 
-    // t1.prune(0.05);
-    // // std::cout << "after prune " << endl;
-    // PNG result = t1.render();
+//     t1.prune(0.05);
+//     // std::cout << "after prune " << endl;
+//     PNG result = t1.render();
 
-    // PNG expected; expected.readFromFile("images/adaPrune.05.png");
-    // result.convert();
+//     PNG expected; expected.readFromFile("images/adaPrune.05.png");
+//     result.convert();
 
-    // REQUIRE(expected==result);
-}
+//     REQUIRE(expected==result);
+// }
 
