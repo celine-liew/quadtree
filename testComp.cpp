@@ -46,47 +46,47 @@ TEST_CASE("stats::basic getAvg","[weight=1][part=stats]"){
     REQUIRE(result == expected);
 }
 
-TEST_CASE("stats::basic getAvg 2","[weight=1][part=stats]"){
-    PNG data; data.resize(3,3);
-    for (int i = 0; i < 3; i ++){
-        for (int j = 0; j < 3; j++){
-            HSLAPixel * p = data.getPixel(i,j);
-            p->h = 50*j + i * 90;
-            p->s = 0.5;
-            p->l = 0.4;
-            p->a = 1.0;
-        }
-    }
-    stats s(data);
-    pair<int,int> ul(0,1);
-    pair<int,int> lr(0,1);
-    HSLAPixel result = s.getAvg(ul,lr);
-    std::cout << "size 0,1 0,1: " << result << endl;
-    HSLAPixel expected(230,0.5, 0.4);
+// TEST_CASE("stats::basic getAvg 2","[weight=1][part=stats]"){
+//     PNG data; data.resize(3,3);
+//     for (int i = 0; i < 3; i ++){
+//         for (int j = 0; j < 3; j++){
+//             HSLAPixel * p = data.getPixel(i,j);
+//             p->h = 50*j + i * 90;
+//             p->s = 0.5;
+//             p->l = 0.4;
+//             p->a = 1.0;
+//         }
+//     }
+//     stats s(data);
+//     pair<int,int> ul(0,1);
+//     pair<int,int> lr(0,1);
+//     HSLAPixel result = s.getAvg(ul,lr);
+//     std::cout << "size 0,1 0,1: " << result << endl;
+//     HSLAPixel expected(230,0.5, 0.4);
 
-    REQUIRE(result == expected);
-}
+//     REQUIRE(result == expected);
+// }
 
-TEST_CASE("stats::basic getAvg 3","[weight=1][part=stats]"){
-    PNG data; data.resize(3,3);
-    for (int i = 0; i < 3; i ++){
-        for (int j = 0; j < 3; j++){
-            HSLAPixel * p = data.getPixel(i,j);
-            p->h = 90*j + i * 50;
-            p->s = 0.5;
-            p->l = 0.4;
-            p->a = 1.0;
-        }
-    }
-    stats s(data);
-    pair<int,int> ul(0,0);
-    pair<int,int> lr(0,1);
-    HSLAPixel result = s.getAvg(ul,lr);
-    std::cout << "size 1,0 1,0: " << result << endl;
-    HSLAPixel expected(230,0.5, 0.4);
+// TEST_CASE("stats::basic getAvg 3","[weight=1][part=stats]"){
+//     PNG data; data.resize(3,3);
+//     for (int i = 0; i < 3; i ++){
+//         for (int j = 0; j < 3; j++){
+//             HSLAPixel * p = data.getPixel(i,j);
+//             p->h = 90*j + i * 50;
+//             p->s = 0.5;
+//             p->l = 0.4;
+//             p->a = 1.0;
+//         }
+//     }
+//     stats s(data);
+//     pair<int,int> ul(0,0);
+//     pair<int,int> lr(0,1);
+//     HSLAPixel result = s.getAvg(ul,lr);
+//     std::cout << "size 1,0 1,0: " << result << endl;
+//     HSLAPixel expected(230,0.5, 0.4);
 
-    REQUIRE(result == expected);
-}
+//     REQUIRE(result == expected);
+//  }
 
 // TEST_CASE("stats::basic getAvg 4","[weight=1][part=stats]"){
 //     PNG data; data.resize(3,3);
@@ -150,17 +150,18 @@ TEST_CASE("stats::basic entropy","[weight=1][part=stats]"){
     REQUIRE(result == 2);
 }
 
-// TEST_CASE("toqutree::basic ctor render","[weight=1][part=toqutree]"){
-//     PNG img;
-//     img.readFromFile("images/stanleySquare.png");
+TEST_CASE("toqutree::basic ctor render","[weight=1][part=toqutree]"){
+    PNG img;
+    img.readFromFile("images/stanleySquare.png");
 
-//     toqutree t1(img,9);
-//     // std::cout << "built the tree, now render it! " << endl;
-//     PNG out = t1.render();
-//     out.convert();
+    toqutree t1(img,9);
+    // std::cout << "built the tree, now render it! " << endl;
+    PNG out = t1.render();
+    out.writeToFile("images/out-stanleySquare.png");
+    out.convert();
 
-//     REQUIRE(out==img);
-// }
+    REQUIRE(out==img);
+}
 
 // TEST_CASE("toqutree::basic copy","[weight=1][part=toqutree]"){
 //     PNG img;

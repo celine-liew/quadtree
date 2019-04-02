@@ -84,8 +84,9 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	pair<int,int> optSplitPos;
 	// Base cases
 	if (k == 0){
-		// std::cout << "BuildTree when k = 0" << endl;
+		std::cout << "BuildTree when k = 0" << endl;
 		Node* node = new Node(ul, k, avgPixel);
+		std::cout << node->avg << endl;
 		node->SE = NULL;
 		node->SW = NULL;
 		node->NE = NULL;
@@ -202,14 +203,12 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	// Make 4 PNG im for each child
 
 	Node* node = new Node(optSplitPos, k, avgPixel);
-
-
 	// Call Recursive func here
-	int nextK = k -1;
-	node->NW = buildTree(nwChild, nextK);
-	node->NE = buildTree(neChild, nextK);
-	node->SE = buildTree(seChild, nextK);
-	node->SW = buildTree(swChild, nextK);
+	int nextdim = k -1;
+	node->NW = buildTree(nwChild, nextdim);
+	node->NE = buildTree(neChild, nextdim);
+	node->SE = buildTree(seChild, nextdim);
+	node->SW = buildTree(swChild, nextdim);
 
 	// Node* node = new Node(optSplitPos, k, avgPixel);
 	// std::cout << "our node dim is " << k << endl;
@@ -227,7 +226,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 // an average.
 
 PNG toqutree::render(){
-	unsigned int squareLen = pow(2, root->dimension);
+	int squareLen = pow(2, root->dimension);
 	PNG resultImg(squareLen, squareLen);
 	std::cout << "call reder Helper now! " << endl;
 	// std::cout << "our root dim is "<< root->dimension << endl;
@@ -366,44 +365,94 @@ bool toqutree::isMinEntropy(double min, double avg){
 
 PNG toqutree::renderHelper(PNG & resultImg, Node * root, int dim){
 	std::cout << "start the render helper " << endl;
-	std::cout << "dim is " << dim << endl;
+	std::cout << "root avg is " << root->avg << endl;
 	int squareLen = pow(2, dim);
-	std::cout << "squareLen " << squareLen << endl;
+	// std::cout << "squareLen " << squareLen << endl;
 	int nodeSquareLen = pow(2, dim -1);
-	std::cout << "nodeSquareLen " << nodeSquareLen << endl;
+	// std::cout << "nodeSquareLen " << nodeSquareLen << endl;
 	for(int i = 0; i < squareLen; i++) {
 		for(int j =0; j < squareLen; j++) {
-			HSLAPixel* pixelNew = resultImg.getPixel(i, j);
-			*pixelNew = findPixel(root, dim, i, j);
+			// HSLAPixel* pixelNew = resultImg.getPixel(i, j);
+			*(resultImg.getPixel(i, j)) = findPixel(root, dim, i, j);
 		}
 	}
-	std::cout << "finish renderHelper " << endl;
+	// std::cout << "finish renderHelper " << endl;
 	return resultImg;
 }
 
 HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
 	if(root->NE == NULL) {
-		// std::cout << "I reached the final pixel leave " << endl;
+		std::cout << root->avg << endl;
 		return root->avg;
 	}
 	else {
+		// TODO! 
+
+		// unsigned int seUlX = optSplitPos.first;
+		// unsigned int seUlY = optSplitPos.second;
+		// int parentLen = (int) pow(2, k);
+		// int childLen = (int) pow(2, k - 1);
+
+		// pair<int,int> swUl;
+		// swUl.first  = (seUlX + childLen) % parentLen;
+		// swUl.second = seUlY;
+
+		// pair<int,int> nwUl;
+		// nwUl.first = (seUlX + childLen) % parentLen;
+		// nwUl.second = (seUlY + childLen) % parentLen;
+
+		// pair<int,int> neUl;
+		// neUl.first = seUlX;
+		// neUl.second = (seUlY + childLen) % parentLen;
+
+
 		pair<int, int> splitPos = root->center; 
-		unsigned int squareLen = pow(2, dim);
-		unsigned int nodeSquareLen = pow(2, dim -1);
+
+		unsigned int seUlX = splitPos.first;
+		unsigned int seUlY = splitPos.second;
+		int squareLen = pow(2, dim);
+		int nodeSquareLen = pow(2, dim -1);
 		if((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
 			&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-			findPixel(root->SE, dim -1, x, y);
+			if (splitPos.first <= x) x = x - splitPos.first;
+			// todo
+			if (x <= (splitPos.first + nodeSquareLen -1) % squareLen) x = (squareLen - splitPos.first + x + 1);
+			if (splitPos.second <= y) y = y - splitPos.second;
+			// todo
+			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) y = (squareLen - splitPos.second + y + 1);
+			return findPixel(root->SE, dim -1, x, y);
 		}
 		else if ((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
 		&& (y < splitPos.second || (splitPos.second + nodeSquareLen -1) % squareLen < y)) {
-			findPixel(root->NE, dim -1, x, y);
+			pair<int,int> neUl;
+			neUl.first = seUlX;
+			neUl.second = (seUlY + nodeSquareLen) % squareLen;
+			if (splitPos.first <= x) x = x - splitPos.first;
+			if (x <= (splitPos.first + nodeSquareLen -1) % squareLen) x = (squareLen - splitPos.first + x + 1);
+			if (y < splitPos.second) y = (squareLen + y - seUlY) % squareLen;
+			if ((splitPos.second + nodeSquareLen -1) % squareLen < y) y = y - seUlY;
+			return findPixel(root->NE, dim -1, x, y);
 		}
 		else if ((x < splitPos.first || (splitPos.first + nodeSquareLen -1) % squareLen < x)
 		&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-			findPixel(root->SW, dim -1, x, y);
+			pair<int,int> swUl;
+			swUl.first  = (seUlX + nodeSquareLen) % squareLen;
+			swUl.second = seUlY;
+			if (x < splitPos.first) x = (squareLen - swUl.first + x);
+			if ((splitPos.first + nodeSquareLen -1) % squareLen < x) x = x - swUl.first;
+			if (splitPos.second <= y) y = y - splitPos.second;
+			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) y = (squareLen - splitPos.second + y + 1);
+			return findPixel(root->SW, dim -1, x, y);
 		}
 		else {
-			findPixel(root->NW,dim -1, x, y);
+			pair<int,int> nwUl;
+			nwUl.first = (seUlX + nodeSquareLen) % squareLen;
+			nwUl.second = (seUlY + nodeSquareLen) % squareLen;
+			if (x < splitPos.first) x = (squareLen - nwUl.first + x);
+			if ((splitPos.first + nodeSquareLen -1) % squareLen < x) x = x - nwUl.first;
+			if (y < splitPos.second) y = (squareLen + y - nwUl.second) % squareLen;
+			if ((splitPos.second + nodeSquareLen -1) % squareLen < y) y = y - nwUl.second;
+			return findPixel(root->NW,dim -1, x, y);
 		}
 	}
 }
