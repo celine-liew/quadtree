@@ -200,9 +200,10 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	// for splitting
 	// TODO: have to get optSplitPos first 
 	// Make 4 PNG im for each child
-
+	// std::cout << "our avgPixel is " << avgPixel << endl;
+	
 	Node* node = new Node(optSplitPos, k, avgPixel);
-
+	// std::cout << "our node avg is " << node->avg << endl;
 
 	// Call Recursive func here
 	int nextK = k -1;
@@ -383,7 +384,7 @@ PNG toqutree::renderHelper(PNG & resultImg, Node * root, int dim){
 
 HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
 	if(root->NE == NULL) {
-		// std::cout << "I reached the final pixel leave " << endl;
+		// std::cout << "I reached the final pixel leave " << root->avg << endl;
 		return root->avg;
 	}
 	else {
@@ -392,18 +393,18 @@ HSLAPixel toqutree::findPixel(Node* root, int dim, int x, int y) {
 		unsigned int nodeSquareLen = pow(2, dim -1);
 		if((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
 			&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-			findPixel(root->SE, dim -1, x, y);
+			return findPixel(root->SE, dim -1, x, y);
 		}
 		else if ((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
 		&& (y < splitPos.second || (splitPos.second + nodeSquareLen -1) % squareLen < y)) {
-			findPixel(root->NE, dim -1, x, y);
+			return findPixel(root->NE, dim -1, x, y);
 		}
 		else if ((x < splitPos.first || (splitPos.first + nodeSquareLen -1) % squareLen < x)
 		&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-			findPixel(root->SW, dim -1, x, y);
+			return findPixel(root->SW, dim -1, x, y);
 		}
 		else {
-			findPixel(root->NW,dim -1, x, y);
+			return findPixel(root->NW,dim -1, x, y);
 		}
 	}
 }
