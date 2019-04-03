@@ -231,9 +231,10 @@ private:
    double getEntropyBottomRighOnlyNWnoSplit(pair<int, int> curSplitPos, long rectArea, 
    int twokWidth, int twokheight, stats s);
    
-   PNG renderHelper(PNG & resultImg, Node * root, int dim);
+   PNG renderHelper(PNG & resultImg, Node * root);
+   // PNG renderHelper(PNG & resultImg, Node * croot, int dim);
 
-   HSLAPixel findPixel(toqutree::Node* root, int dim, int x, int y);
+   HSLAPixel findPixel(Node* croot, int dim, int x, int y);
 
    void pruneHelper(Node * & aNode, double tol);
 
@@ -241,6 +242,9 @@ private:
 
    PNG makeNewImg(int subImgK, PNG & im, pair<int,int> ul);
 
+   PNG renderInitImage(Node* croot) ;
+
+   PNG renderFourImg(PNG sePNG, PNG swPNG, PNG nePNG, PNG nwPNG, Node* croot);
 };
 
 #endif

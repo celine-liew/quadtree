@@ -80,7 +80,9 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	int height = im.height();
 	pair<int,int> ul(0,0);
 	pair<int,int> lr(width - 1, height - 1);
+	// std::cout << s.getAvg(ul,lr) << endl;
 	HSLAPixel avgPixel = s.getAvg(ul,lr);
+	// std::cout << avgPixel << endl;
 	pair<int,int> optSplitPos;
 	// Base cases
 	if (k == 0){
@@ -100,19 +102,21 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	PNG neChild(width/2, height/2);
 	// std::cout << "BuildTree before if k = 1" << endl;
 	if (k == 1){
+		optSplitPos.first = 1;
+		optSplitPos.second = 1;
 		// std::cout << "BuildTree when k = 1 finally !!" << endl;
-		HSLAPixel * pixelNewNW = nwChild.getPixel(0, 0);
+		HSLAPixel* pixelNewNW = nwChild.getPixel(0, 0);
 		// std::cout << "getpixel nwChild !!" << endl;
 		*pixelNewNW = *im.getPixel(0,0);
 		// std::cout << "getpixel original img !!" << endl;
 
-		HSLAPixel * pixelNewSe = seChild.getPixel(0, 0);
+		HSLAPixel* pixelNewSe = seChild.getPixel(0, 0);
 		*pixelNewSe = *im.getPixel(1,1);
 
-		HSLAPixel * pixelNewSw = swChild.getPixel(0, 0);
+		HSLAPixel* pixelNewSw = swChild.getPixel(0, 0);
 		*pixelNewSw = *im.getPixel(0,1);
 		
-		HSLAPixel * pixelNewNe = neChild.getPixel(0, 0);
+		HSLAPixel* pixelNewNe = neChild.getPixel(0, 0);
 		*pixelNewNe = *im.getPixel(1,0);
 
 	}
@@ -204,7 +208,7 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 	
 	Node* node = new Node(optSplitPos, k, avgPixel);
 	// Call Recursive func here
-	std::cout << "what is optSplitPos ? " << optSplitPos.first << "y: " << optSplitPos.second  << endl;
+	// std::cout << "what is optSplitPos ? " << optSplitPos.first << "y: " << optSplitPos.second  << endl;
 	int nextdim = k -1;
 	node->NW = buildTree(nwChild, nextdim);
 	node->NE = buildTree(neChild, nextdim);
@@ -229,10 +233,10 @@ toqutree::Node * toqutree::buildTree(PNG & im, int k) {
 PNG toqutree::render(){
 	int squareLen = pow(2, root->dimension);
 	PNG resultImg(squareLen, squareLen);
-	std::cout << "call reder Helper now! " << endl;
-	std::cout << "our root avg is "<< root->avg << endl;
+	// std::cout << "call reder Helper now! " << endl;
+	// std::cout << "our root avg is "<< root->avg << endl;
 
-	resultImg = renderHelper(resultImg, root, root->dimension);
+	resultImg = renderHelper(resultImg, root);
 // My algorithm for this problem included a helper function
 // that was analogous to Find in a BST, but it navigated the 
 // quadtree, instead.
@@ -365,120 +369,71 @@ bool toqutree::isMinEntropy(double min, double avg){
 	return false;
 }
 
-PNG toqutree::renderHelper(PNG & resultImg, Node * croot, int dim){
-	std::cout << "start the render helper " << endl;
-	std::cout << "root avg is " << root->avg << endl;
-	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>> " << endl;
-	// std::cout << "dim is " << dim << endl;
-	std::cout << "our croot avg is "<< croot->avg << endl;
+PNG toqutree::renderHelper(PNG & resultImg, Node * croot){
 
-	int squareLen = pow(2, dim);
-	// std::cout << "squareLen " << squareLen << endl;
-	int nodeSquareLen = pow(2, dim -1);
-	// std::cout << "nodeSquareLen " << nodeSquareLen << endl;
-	for(int i = 0; i < squareLen; i++) {
-		for(int j =0; j < squareLen; j++) {
-			std::cout << "i is "<< i << "j " << j << endl;
-			// HSLAPixel* pixelNew = resultImg.getPixel(i, j);
-			*(resultImg.getPixel(i, j)) = findPixel(root, dim, i, j);
-		}
-	}
-	// std::cout << "finish renderHelper " << endl;
-	return resultImg;
-}
-
-HSLAPixel toqutree::findPixel(Node* croot, int dim, int x, int y) {
 	if(croot->NE == NULL) {
-		std::cout << croot->avg << endl;
-		return croot->avg;
+		return renderInitImage(croot);
 	}
 	else {
-		pair<int, int> splitPos = root->center; 
-
-		unsigned int seUlX = splitPos.first;
-		unsigned int seUlY = splitPos.second;
-		int squareLen = pow(2, dim);
-		int nodeSquareLen = pow(2, dim -1);
-		if((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
-			&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-			if (splitPos.first <= x) x = x - splitPos.first;
-			// todo
-			if (x <= (splitPos.first + nodeSquareLen -1) % squareLen) x = (squareLen - splitPos.first + x + 1);
-			if (splitPos.second <= y) y = y - splitPos.second;
-			// todo
-			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) y = (squareLen - splitPos.second + y + 1);
-			std::cout << "croot->SE "<< (croot->SE)->avg << endl;
-			if (y < 0){
-				std::cout << "LINE 411 y wrong!!! " << y << endl;
-			}
-			
-			return findPixel(croot->SE, dim -1, x, y);
-		}
-		else if ((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
-		&& (y < splitPos.second || (splitPos.second + nodeSquareLen -1) % squareLen < y)) {
-			pair<int,int> neUl;
-			neUl.first = seUlX;
-			neUl.second = (seUlY + nodeSquareLen) % squareLen;
-			if (splitPos.first <= x) x = x - splitPos.first;
-			if (x <= (splitPos.first + nodeSquareLen -1) % squareLen) x = (squareLen - splitPos.first + x + 1);
-			if (y < splitPos.second) y = (squareLen + y - seUlY) % squareLen;
-			if ((splitPos.second + nodeSquareLen -1) % squareLen < y) y = y - seUlY;
-			std::cout << "croot->NE "<< (croot->NE)->avg << endl;
-			if (y < 0){
-				std::cout << "LINE 427 y wrong!!! " << y << endl;
-			}
-			return findPixel(croot->NE, dim -1, x, y);
-		}
-		else if ((x < splitPos.first || (splitPos.first + nodeSquareLen -1) % squareLen < x)
-		&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-			pair<int,int> swUl;
-			swUl.first  = (seUlX + nodeSquareLen) % squareLen;
-			swUl.second = seUlY;
-			if (x < splitPos.first) x = (squareLen - swUl.first + x);
-			if ((splitPos.first + nodeSquareLen -1) % squareLen < x) x = x - swUl.first;
-			if (splitPos.second <= y) y = y - splitPos.second;
-			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) {
-				std::cout << "what is y? "<< y << endl;
-				std::cout << "what is splitpoint second? "<< splitPos.second  << endl;
-				std::cout << "what is squareLen ? "<< squareLen  << endl;
-				y = (squareLen - splitPos.second + y + 1);
-				std::cout << "what is y nowwww? "<< y << endl;
-			}
-			std::cout << "croot->SW "<< (croot->SW)->avg << endl;
-			// std::cout << "x & y "<< x << "y: " << y << endl;
-			if (y < 0){
-				std::cout << "LINE 444 y wrong!!! " << y << endl;
-			}
-			return findPixel(croot->SW, dim -1, x, y);
-		}
-		else {
-			pair<int,int> nwUl;
-			nwUl.first = (seUlX + nodeSquareLen) % squareLen;
-			nwUl.second = (seUlY + nodeSquareLen) % squareLen;
-			if (x < splitPos.first) x = (squareLen - nwUl.first + x);
-			if ((splitPos.first + nodeSquareLen -1) % squareLen < x) x = x - nwUl.first;
-			if (y < splitPos.second) y = (squareLen + y - nwUl.second) % squareLen;
-			if ((splitPos.second + nodeSquareLen -1) % squareLen < y) y = y - nwUl.second;
-			std::cout << "croot->NW "<< (croot->NW)->avg << endl;
-			// std::cout << "x & y "<< x << y << endl;
-			if (y < 0){
-				std::cout << "LINE 458 y wrong!!! " << y << endl;
-			}
-			return findPixel(croot->NW,dim -1, x, y);
-		}
+		PNG sePNG = renderHelper(resultImg, croot->SE);
+		PNG swPNG = renderHelper(resultImg, croot->SW);
+		PNG nePNG = renderHelper(resultImg, croot->NE);
+		PNG nwPNG = renderHelper(resultImg, croot->NW);
+		return resultImg = renderFourImg(sePNG, swPNG, nePNG, nwPNG, croot);
 	}
 }
 
-// pair<int,int> splitPos = root->center;
-			// if (root->NE == NULL) {
-			// 	HSLAPixel* pixelNew = resultImg.getPixel(i, j);
-            // 	*pixelNew = root->avg;
-			// } else {
-			// 	if((splitPos.first <= i || i <= (splitPos.first + nodeSquareLen -1) % squareLen)
-			// 		&& (splitPos.second <= j || i <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
-					
-			// 		}
-			// }
+PNG toqutree::renderInitImage(Node* croot) {
+	unsigned int width = pow(2,croot->dimension);
+	unsigned int height = width;
+	PNG newIm(width, height);
+
+    for (unsigned int i = 0; i < width; i++) {
+        for (unsigned int j = 0; j < height; j++) {
+            HSLAPixel* pixelNew = newIm.getPixel(i, j);
+			// std::cout << "the leave nodes avg when we render is " << croot->avg << endl;
+            *pixelNew = croot->avg;
+        }
+    }
+    return newIm;
+
+}
+
+PNG toqutree::renderFourImg(PNG sePNG, PNG swPNG, PNG nePNG, PNG nwPNG, Node* croot) {
+	pair<int, int> splitPos = make_pair(croot->center.first, croot->center.second); 
+	unsigned int squareLen = pow(2,croot->dimension);
+	unsigned int subSquareLen = squareLen/2;
+	PNG newIm(squareLen, squareLen);
+
+	for (unsigned int i = 0; i < subSquareLen; i++) {
+        for (unsigned int j = 0; j < subSquareLen; j++) {
+			HSLAPixel* pixelNew = newIm.getPixel((i+splitPos.first) % squareLen, (j+splitPos.second) % squareLen);
+            *pixelNew = *sePNG.getPixel(i, j);
+        }
+    }
+
+	for (unsigned int i = 0; i < subSquareLen; i++) {
+        for (unsigned int j = 0; j < subSquareLen; j++) {
+			HSLAPixel* pixelNew = newIm.getPixel((i+splitPos.first) % squareLen, (j+splitPos.second+subSquareLen) % squareLen);
+            *pixelNew = *nePNG.getPixel(i, j);
+        }
+    }
+
+	for (unsigned int i = 0; i < subSquareLen; i++) {
+        for (unsigned int j = 0; j < subSquareLen; j++) {
+			HSLAPixel* pixelNew = newIm.getPixel((i+splitPos.first+subSquareLen) % squareLen, (j+splitPos.second) % squareLen);
+            *pixelNew = *swPNG.getPixel(i, j);
+        }
+    }
+	for (unsigned int i = 0; i < subSquareLen; i++) {
+        for (unsigned int j = 0; j < subSquareLen; j++) {
+			HSLAPixel* pixelNew = newIm.getPixel((i+splitPos.first+subSquareLen) % squareLen, (j+splitPos.second+subSquareLen) % squareLen);
+            *pixelNew = *nwPNG.getPixel(i, j);
+        }
+    }
+    return newIm;
+}
+
 void toqutree::pruneHelper(Node * & aNode, double tol) {
 	// std::cout << "prunehelper" << endl;
 	if (aNode == NULL){ // no children, nothing to prune.
@@ -518,16 +473,140 @@ bool toqutree::withinTolerance(Node * node,  double tol, HSLAPixel nodePixel){
 PNG toqutree::makeNewImg(int subImgK, PNG & im, pair<int,int> ul) {
 	unsigned int width = pow(2,subImgK);
 	unsigned int height = width;
+	unsigned int parentLen = im.width();
 	PNG newIm(width, height);
 
     for (unsigned int i = 0; i < width; i++) {
         for (unsigned int j = 0; j < height; j++) {
-			int x = (ul.first + j) % width;
-			int y = (ul.second + i) % height;
-
+			int x = (ul.first + j) % parentLen;
+			int y = (ul.second + i) % parentLen;
+			
+			// std::cout << "ul.first + i:  " << (ul.first + j) % width << endl;
             HSLAPixel* pixelNew = newIm.getPixel(i, j);
             *pixelNew = *im.getPixel(x, y);
         }
     }
+	// std::cout << "newIm" << *newIm.getPixel % width << endl;
     return newIm;
 }
+
+// PNG toqutree::renderHelper(PNG & resultImg, Node * croot, int dim){
+// 	std::cout << "start the render helper " << endl;
+// 	std::cout << "root avg is " << root->avg << endl;
+// 	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>> " << endl;
+// 	// std::cout << "dim is " << dim << endl;
+// 	std::cout << "our croot avg is "<< croot->avg << endl;
+
+// 	int squareLen = pow(2, dim);
+// 	// std::cout << "squareLen " << squareLen << endl;
+// 	int nodeSquareLen = pow(2, dim -1);
+// 	// std::cout << "nodeSquareLen " << nodeSquareLen << endl;
+// 	for(int i = 0; i < squareLen; i++) {
+// 		for(int j =0; j < squareLen; j++) {
+// 			std::cout << "i is "<< i << "j " << j << endl;
+// 			// HSLAPixel* pixelNew = resultImg.getPixel(i, j);
+// 			*(resultImg.getPixel(i, j)) = findPixel(root, dim, i, j);
+// 		}
+// 	}
+// 	// std::cout << "finish renderHelper " << endl;
+// 	return resultImg;
+// }
+
+// HSLAPixel toqutree::findPixel(Node* croot, int dim, int x, int y) {
+// 	// std::cout << "SplitPos of croot x" << croot->center.first << endl;
+// 	// std::cout << "SplitPos of croot y" << croot->center.second << endl;
+// 	pair<int, int> splitPos;
+// 	splitPos.first = croot->center.first;
+// 	splitPos.second = croot->center.second; 
+
+// 	if(croot->NE == NULL) {
+// 		std::cout << croot->avg << endl;
+// 		return croot->avg;
+// 	}
+// 	else {
+
+// 		int seUlX = splitPos.first;
+// 		int seUlY = splitPos.second;
+// 		int squareLen = pow(2, dim);
+// 		int nodeSquareLen = pow(2, dim -1);
+// 		if((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
+// 			&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
+// 			// std::cout << "SplitPos of croot x" << croot->center.first << endl;
+// 			// std::cout << "SplitPos of croot y" << croot->center.second << endl;
+// 			if (splitPos.first <= x) x = x - splitPos.first;
+// 			// todo
+// 			if (x <= (splitPos.first + nodeSquareLen -1) % squareLen) x = (squareLen - splitPos.first + x + 1);
+// 			if (splitPos.second <= y) y = y - splitPos.second;
+// 			// todo
+// 			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) y = (squareLen - splitPos.second + y + 1);
+// 			// std::cout << "croot->SE "<< (croot->SE)->avg << endl;
+// 			// if (y < 0){
+// 			// 	std::cout << "LINE 411 y wrong!!! " << y << endl;
+// 			// }
+			
+// 			return findPixel(croot->SE, dim -1, x, y);
+// 		}
+// 		else if ((splitPos.first <= x || x <= (splitPos.first + nodeSquareLen -1) % squareLen)
+// 		&& (y < splitPos.second || (splitPos.second + nodeSquareLen -1) % squareLen < y)) {
+// 			// std::cout << "SplitPos of croot x" << croot->center.first << endl;
+// 			// std::cout << "SplitPos of croot y" << croot->center.second << endl;
+// 			pair<int,int> neUl;
+// 			neUl.first = seUlX;
+// 			neUl.second = (seUlY + nodeSquareLen) % squareLen;
+// 			if (splitPos.first <= x) x = x - splitPos.first;
+// 			if (x <= (splitPos.first + nodeSquareLen -1) % squareLen) x = (squareLen - splitPos.first + x + 1);
+// 			if (y < splitPos.second) y = (squareLen + y - seUlY) % squareLen;
+// 			if ((splitPos.second + nodeSquareLen -1) % squareLen < y) y = y - seUlY;
+// 			// std::cout << "croot->NE "<< (croot->NE)->avg << endl;
+// 			// if (y < 0){
+// 			// 	std::cout << "LINE 427 y wrong!!! " << y << endl;
+// 			// }
+// 			return findPixel(croot->NE, dim -1, x, y);
+// 		}
+// 		else if ((x < splitPos.first || (splitPos.first + nodeSquareLen -1) % squareLen < x)
+// 		&& (splitPos.second <= y || y <= (splitPos.second + nodeSquareLen -1) % squareLen)) {
+// 			// std::cout << "SplitPos of croot x" << croot->center.first << endl;
+// 			// std::cout << "SplitPos of croot y" << croot->center.second << endl;
+// 			pair<int,int> swUl;
+// 			swUl.first  = (seUlX + nodeSquareLen) % squareLen;
+// 			swUl.second = seUlY;
+// 			if (x < splitPos.first) x = (squareLen - swUl.first + x);
+// 			if ((splitPos.first + nodeSquareLen -1) % squareLen < x) x = x - swUl.first;
+// 			if (splitPos.second <= y) y = y - splitPos.second;
+// 			if (y <= (splitPos.second + nodeSquareLen -1) % squareLen) {
+// 				// std::cout << "what is x? "<< x << endl;
+// 				// std::cout << "what is splitpoint first? "<< splitPos.first  << endl;
+// 				// std::cout << "what is y? "<< y << endl;
+// 				// std::cout << "what is splitpoint second? "<< splitPos.second  << endl;
+// 				// std::cout << "what is squareLen ? "<< squareLen  << endl;
+// 				y = (squareLen - splitPos.second + y + 1);
+// 				// std::cout << "what is y nowwww? "<< y << endl;
+// 			}
+// 			// std::cout << "croot->SW "<< (croot->SW)->avg << endl;
+// 			// std::cout << "x & y "<< x << "y: " << y << endl;
+// 			// if (y < 0){
+// 			// 	std::cout << "LINE 444 y wrong!!! " << y << endl;
+// 			// }
+// 			return findPixel(croot->SW, dim -1, x, y);
+// 		}
+// 		else {
+// 			// std::cout << "SplitPos of croot x" << croot->center.first << endl;
+// 	std::cout << "SplitPos of croot y" << croot->center.second << endl;
+// 			pair<int,int> nwUl;
+// 			nwUl.first = (seUlX + nodeSquareLen) % squareLen;
+// 			nwUl.second = (seUlY + nodeSquareLen) % squareLen;
+// 			if (x < splitPos.first) x = (squareLen - nwUl.first + x);
+// 			if ((splitPos.first + nodeSquareLen -1) % squareLen < x) x = x - nwUl.first;
+// 			if (y < splitPos.second) y = (squareLen + y - nwUl.second) % squareLen;
+// 			if ((splitPos.second + nodeSquareLen -1) % squareLen < y) y = y - nwUl.second;
+// 			// std::cout << "croot->NW "<< (croot->NW)->avg << endl;
+// 			// // std::cout << "x & y "<< x << y << endl;
+// 			// if (y < 0){
+// 			// 	std::cout << "LINE 458 y wrong!!! " << y << endl;
+// 			// }
+// 			return findPixel(croot->NW,dim -1, x, y);
+// 		}
+// 	}
+// }
+
+
