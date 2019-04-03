@@ -163,32 +163,32 @@ TEST_CASE("toqutree::basic ctor render","[weight=1][part=toqutree]"){
     REQUIRE(out==img);
 }
 
-// TEST_CASE("toqutree::basic copy","[weight=1][part=toqutree]"){
-//     PNG img;
-//     img.readFromFile("images/geo.png");
+TEST_CASE("toqutree::basic copy","[weight=1][part=toqutree]"){
+    PNG img;
+    img.readFromFile("images/geo.png");
 
-//     toqutree t1(img,5);
-//     toqutree t1copy(t1);
+    toqutree t1(img,5);
+    toqutree t1copy(t1);
 
-//     PNG out = t1copy.render();
+    PNG out = t1copy.render();
 
-//     REQUIRE(out==img);
-// }
+    REQUIRE(out==img);
+}
 
-// TEST_CASE("toqutree::basic prune","[weight=1][part=toqutree]"){
-//     std::cout << "basic prune" << endl;
-//     PNG img;
-//     img.readFromFile("images/ada.png");
+TEST_CASE("toqutree::basic prune","[weight=1][part=toqutree]"){
+    std::cout << "basic prune" << endl;
+    PNG img;
+    img.readFromFile("images/ada.png");
     
-//     toqutree t1(img,9);
+    toqutree t1(img,9);
 
-//     t1.prune(0.05);
-//     // std::cout << "after prune " << endl;
-//     PNG result = t1.render();
+    t1.prune(0.05);
+    // std::cout << "after prune " << endl;
+    PNG result = t1.render();
 
-//     PNG expected; expected.readFromFile("images/adaPrune.05.png");
-//     result.convert();
+    PNG expected; expected.readFromFile("images/adaPrune.05.png");
+    result.convert();
 
-//     REQUIRE(expected==result);
-// }
+    REQUIRE(expected==result);
+}
 

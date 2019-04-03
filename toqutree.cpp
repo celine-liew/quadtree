@@ -482,7 +482,7 @@ PNG toqutree::makeNewImg(int subImgK, PNG & im, pair<int,int> ul) {
 			int y = (ul.second + i) % parentLen;
 			
 			// std::cout << "ul.first + i:  " << (ul.first + j) % width << endl;
-            HSLAPixel* pixelNew = newIm.getPixel(i, j);
+            HSLAPixel* pixelNew = newIm.getPixel(j, i);
             *pixelNew = *im.getPixel(x, y);
         }
     }
